@@ -1,0 +1,74 @@
+
+#-----------------------------------------------------------
+#----- (1) Create the Polygenice gene scores           ----#
+
+chrom    pos    sid    nt1    nt2    raw_beta    ldpred_inf_beta 
+chrom_1    752566    rs3094315    G    A    -8.7262e-03    1.5120e-04
+chrom_1    752721    rs3131972    A    G    -6.7551e-03    1.0358e-04
+chrom_1    754182    rs3131969    A    G    -7.8512e-03    1.1066e-04
+chrom_1    760912    rs1048488    C    T    -7.9340e-03    1.3367e-04
+chrom_1    761147    rs3115850    T    C    -7.9802e-03    1.3371e-04
+chrom_1    761732    rs2286139    C    T    -7.4898e-03    9.5762e-05
+chrom_1    768448    rs12562034    A    G    9.8158e-03    -2.2331e-04
+chrom_1    779322    rs4040617    G    A    -1.2322e-02    2.1123e-04
+chrom_1    785989    rs2980300    T    C    -1.0196e-02    1.6284e-04
+PLINK v1.90b5.2 64-bit (9 Jan 2018)            www.cog-genomics.org/plink/1.9/
+(C) 2005-2018 Shaun Purcell, Christopher Chang   GNU General Public License v3
+Logging to COG_PGS_WLS.log.
+Options in effect:
+  --allow-no-sex
+  --bfile /mnt/department/econ/biroli/geighei/data/WLS/CleanData/WLS_Genotypic_Data/cleanWSL_unrelated
+  --out COG_PGS_WLS
+  --score /mnt/data/Research/cogNoncogGSEM/3_Summary_statistics/LDpred_sumstats/excl_WLS/COG_excl_WLS/COG_excl_WLS.LDpred-r400_LDpred-inf.txt 3 5 7 center
+
+15912 MB RAM detected; reserving 7956 MB for main workspace.
+635421 variants loaded from .bim file.
+6539 people (3172 males, 3367 females) loaded from .fam.
+Using 1 thread (no multithreaded calculations invoked).
+Before main variant filters, 6539 founders and 0 nonfounders present.
+Calculating allele frequencies... 0%1%2%3%4%5%6%7%8%9%10%11%12%13%14%15%16%17%18%19%20%21%22%23%24%25%26%27%28%29%30%31%32%33%34%35%36%37%38%39%40%41%42%43%44%45%46%47%48%49%50%51%52%53%54%55%56%57%58%59%60%61%62%63%64%65%66%67%68%69%70%71%72%73%74%75%76%77%78%79%80%81%82%83%84%85%86%87%88%89%90%91%92%93%94%95%96%97%98%99% done.
+Total genotyping rate is 0.999079.
+635421 variants and 6539 people pass filters and QC.
+Note: No phenotypes present.
+--score: 241118 valid predictors loaded.
+--score: Results written to COG_PGS_WLS.profile .
+PLINK v1.90b5.2 64-bit (9 Jan 2018)            www.cog-genomics.org/plink/1.9/
+(C) 2005-2018 Shaun Purcell, Christopher Chang   GNU General Public License v3
+Logging to NONCOG_PGS_WLS.log.
+Options in effect:
+  --allow-no-sex
+  --bfile /mnt/department/econ/biroli/geighei/data/WLS/CleanData/WLS_Genotypic_Data/cleanWSL_unrelated
+  --out NONCOG_PGS_WLS
+  --score /mnt/data/Research/cogNoncogGSEM/3_Summary_statistics/LDpred_sumstats/excl_WLS/NONCOG_excl_WLS/NONCOG_excl_WLS.LDpred-r400_LDpred-inf.txt 3 5 7 center
+
+15912 MB RAM detected; reserving 7956 MB for main workspace.
+635421 variants loaded from .bim file.
+6539 people (3172 males, 3367 females) loaded from .fam.
+Using 1 thread (no multithreaded calculations invoked).
+Before main variant filters, 6539 founders and 0 nonfounders present.
+Calculating allele frequencies... 0%1%2%3%4%5%6%7%8%9%10%11%12%13%14%15%16%17%18%19%20%21%22%23%24%25%26%27%28%29%30%31%32%33%34%35%36%37%38%39%40%41%42%43%44%45%46%47%48%49%50%51%52%53%54%55%56%57%58%59%60%61%62%63%64%65%66%67%68%69%70%71%72%73%74%75%76%77%78%79%80%81%82%83%84%85%86%87%88%89%90%91%92%93%94%95%96%97%98%99% done.
+Total genotyping rate is 0.999079.
+635421 variants and 6539 people pass filters and QC.
+Note: No phenotypes present.
+--score: 241118 valid predictors loaded.
+--score: Results written to NONCOG_PGS_WLS.profile .
+PLINK v1.90b5.2 64-bit (9 Jan 2018)            www.cog-genomics.org/plink/1.9/
+(C) 2005-2018 Shaun Purcell, Christopher Chang   GNU General Public License v3
+Logging to EA3_PGS_WLS.log.
+Options in effect:
+  --allow-no-sex
+  --bfile /mnt/department/econ/biroli/geighei/data/WLS/CleanData/WLS_Genotypic_Data/cleanWSL_unrelated
+  --out EA3_PGS_WLS
+  --score /mnt/data/Research/cogNoncogGSEM/3_Summary_statistics/LDpred_sumstats/excl_WLS/EA3_excl23andMe_WLS/EA3_excl23andMe_WLS.LDpred-r400_LDpred-inf.txt 3 5 7 center
+
+15912 MB RAM detected; reserving 7956 MB for main workspace.
+635421 variants loaded from .bim file.
+6539 people (3172 males, 3367 females) loaded from .fam.
+Using 1 thread (no multithreaded calculations invoked).
+Before main variant filters, 6539 founders and 0 nonfounders present.
+Calculating allele frequencies... 0%1%2%3%4%5%6%7%8%9%10%11%12%13%14%15%16%17%18%19%20%21%22%23%24%25%26%27%28%29%30%31%32%33%34%35%36%37%38%39%40%41%42%43%44%45%46%47%48%49%50%51%52%53%54%55%56%57%58%59%60%61%62%63%64%65%66%67%68%69%70%71%72%73%74%75%76%77%78%79%80%81%82%83%84%85%86%87%88%89%90%91%92%93%94%95%96%97%98%99% done.
+Total genotyping rate is 0.999079.
+635421 variants and 6539 people pass filters and QC.
+Note: No phenotypes present.
+--score: 245968 valid predictors loaded.
+--score: Results written to EA3_PGS_WLS.profile .

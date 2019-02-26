@@ -1,7 +1,7 @@
 # TO RUN THIS FILE:
-# $ nohup ./WLS-ldpredPGS.sh > WLS-ldpred.log &
+# $ nohup bash WLS_PGS.sh > WLS_PGS.log &
 
-# This files creates the EA, cog, and noncog PGS for the WLS dataset
+# This files creates the EA, cog, and noncog PGS for the WLS dataset using the LDpred-inf weights constructed by Travis
 # Author: Pietro Biroli
 # Date: Feb 2019
 
@@ -19,7 +19,7 @@ OUTPUT_PATH='/mnt/data/Research/cogNoncogGSEM/PGS/WLS'
 cd $OUTPUT_PATH
 
 # printf "\n#-----------------------------------------------------------\n"
-# printf "#----- (1) Get the raw data from the source folder and do some QC ----#\n\n"
+# printf "#----- (0) Get the raw data from the source folder and do some QC ----#\n\n"
 # # composite quality + informativeness + effective sample size filters (seggested by WLS readme)
 # plink1.9 --bfile $INPUT_GENE/Herd_WLS_TOP_subject_level --make-bed --extract $INPUT_GENE/AA_Readme/SNP_composite_filter_effN_extract.txt --out $OUTPUT_PATH/cleanWSL
 #
@@ -28,7 +28,7 @@ cd $OUTPUT_PATH
 
 
 printf "\n#-----------------------------------------------------------\n"
-printf "#----- (2) Create the Polygenice gene scores           ----#\n\n"
+printf "#----- (1) Create the Polygenice gene scores           ----#\n\n"
 # column order: rsID allele-code beta-effect-size
 head $INPUT_SUMSTAT/COG_excl_WLS/COG_excl_WLS.LDpred-r400_LDpred-inf.txt
 # chrom    pos    sid    nt1    nt2    raw_beta    ldpred_inf_beta
