@@ -1,0 +1,552 @@
+----------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /mnt/data/Research/cogNoncogGSEM/analysis/WLS/output/cogNoncog_WLS.log
+  log type:  text
+ opened on:  27 Feb 2019, 19:17:46
+
+. 
+. global CREATEDATA = 1
+
+. global RUNREG     = 1
+
+. 
+. 
+. 
+. if $CREATEDATA==1{
+. ********************************************************************************
+. *******************************MERGE THE DATA **********************************
+. ********************************************************************************
+. *------------ Import the PGS created in plink
+. import delimited "${DIRPGS}/COG_PGS_WLS.profile", clear delimiter(space, collapse)
+(7 vars, 9,109 obs)
+. drop v1 pheno cnt cnt2 
+. rename score COG_PGS
+. compress
+  (0 bytes saved)
+. save "${DIRPGS}/cogNoncogPGS.dta", replace
+file /mnt/data/Research/cogNoncogGSEM/PGS/WLS/cogNoncogPGS.dta saved
+. 
+. import delimited "${DIRPGS}/NONCOG_PGS_WLS.profile", clear delimiter(space, collapse)
+(7 vars, 9,109 obs)
+. drop v1 pheno cnt cnt2 
+. rename score NONCOG_PGS
+. compress
+  (0 bytes saved)
+. merge 1:1 fid iid using "${DIRPGS}/cogNoncogPGS.dta"
+
+    Result                           # of obs.
+    -----------------------------------------
+    not matched                             0
+    matched                             9,109  (_merge==3)
+    -----------------------------------------
+. drop _merge
+. save "${DIRPGS}/cogNoncogPGS.dta", replace
+file /mnt/data/Research/cogNoncogGSEM/PGS/WLS/cogNoncogPGS.dta saved
+. 
+. import delimited "${DIRPGS}/EA3_PGS_WLS.profile", clear delimiter(space, collapse)
+(7 vars, 9,109 obs)
+. drop v1 pheno cnt cnt2 
+. rename score EA3_PGS
+. compress
+  (0 bytes saved)
+. merge 1:1 fid iid using "${DIRPGS}/cogNoncogPGS.dta"
+
+    Result                           # of obs.
+    -----------------------------------------
+    not matched                             0
+    matched                             9,109  (_merge==3)
+    -----------------------------------------
+. drop _merge
+. 
+. duplicates report fid iid
+
+Duplicates in terms of fid iid
+
+--------------------------------------
+   copies | observations       surplus
+----------+---------------------------
+        1 |         9109             0
+--------------------------------------
+. destring fid, force gen(subject_id)
+fid: contains nonnumeric characters; subject_id generated as long
+(12 missing values generated)
+. destring iid, force gen(iid_n)
+iid: contains nonnumeric characters; iid_n generated as long
+(97 missing values generated)
+. 
+. /*  fid and iid are the same, expect for those that a NA for one of them. I drop them 
+> and end up with the sampe of 9012 individuals that is suggested by the WLS
+> 
+> "After the GAC’s standardized QC procedures, including resolution of sample quality an
+> d identity, 
+> genotypes are available on dbGaP for 9,012 unique WLS study participants. 
+> (Note for 15 pairs of monozygotic twins, only one member of each pair is retained in t
+> he unique set of 9,012 participants.)"
+> 
+> 
+> gen diff = subject_id - iid_n
+> sum diff
+> */
+. 
+. drop if missing(subject_id)==1
+(12 observations deleted)
+. drop if missing(iid_n)==1
+(85 observations deleted)
+. drop fid iid iid_n
+. save "${DIRPGS}/cogNoncogPGS.dta", replace
+file /mnt/data/Research/cogNoncogGSEM/PGS/WLS/cogNoncogPGS.dta saved
+. 
+. *------------ Merge with the principal components
+. import delimited "${DIRDATA}/RawData/WLS_Genotypic_Data/AA_Readme/Principal_components
+> .csv", clear delimiter(comma, collapse)
+(23 vars, 9,012 obs)
+. merge 1:1 subject_id using "${DIRPGS}/cogNoncogPGS.dta"
+
+    Result                           # of obs.
+    -----------------------------------------
+    not matched                             0
+    matched                             9,012  (_merge==3)
+    -----------------------------------------
+. drop _merge
+. save "${DIRPGS}/cogNoncogPGS.dta", replace
+file /mnt/data/Research/cogNoncogGSEM/PGS/WLS/cogNoncogPGS.dta saved
+. 
+. *------------ Merge with the information data
+. import delimited "${DIRDATA}/RawData/WLS_Genotypic_Data/AA_Readme/Sample_analysis.csv"
+> , clear delimiter(comma, collapse)
+(15 vars, 9,109 obs)
+. destring subject_id, replace force 
+subject_id: contains nonnumeric characters; replaced as long
+(97 missing values generated)
+. drop if missing(subject_id)==1
+(97 observations deleted)
+. drop sample_id 
+. merge 1:1 subject_id using "${DIRPGS}/cogNoncogPGS.dta"
+
+    Result                           # of obs.
+    -----------------------------------------
+    not matched                             0
+    matched                             9,012  (_merge==3)
+    -----------------------------------------
+. drop _merge
+. save "${DIRPGS}/cogNoncogPGS.dta", replace
+file /mnt/data/Research/cogNoncogGSEM/PGS/WLS/cogNoncogPGS.dta saved
+. 
+. 
+. *------------ Merge with the phenotypic data
+. use "${DIRDATA}/RawData/WLS_Survey_PhenotypicLong-formData-13_06/wls_plg_13_06.dta", c
+> lear
+. keep idpriv-rlifewv srbmi-rbmc6  *iq*  z_rh00*
+. 
+. destring subject_id , replace
+subject_id: all characters numeric; replaced as long
+(10023 missing values generated)
+. drop if missing(subject_id)==1
+(10,023 observations deleted)
+. duplicates report subject_id if subject_id <.
+
+Duplicates in terms of subject_id
+
+--------------------------------------
+   copies | observations       surplus
+----------+---------------------------
+        1 |         8997             0
+        2 |           30            15
+--------------------------------------
+. duplicates drop subject_id, force
+
+Duplicates in terms of subject_id
+
+(15 observations deleted)
+. merge 1:1 subject_id using "${DIRPGS}/cogNoncogPGS.dta"
+
+    Result                           # of obs.
+    -----------------------------------------
+    not matched                             0
+    matched                             9,012  (_merge==3)
+    -----------------------------------------
+. drop _merge
+. 
+. 
+. *------------ Clean and rename some vars
+. recode z_sexrsp (2 = 0)
+(z_sexrsp: 4692 changes made)
+. rename z_sexrsp male
+. tab male
+
+                  RS sex of participant |      Freq.     Percent        Cum.
+----------------------------------------+-----------------------------------
+                                      0 |      4,692       52.06       52.06
+                                   male |      4,320       47.94      100.00
+----------------------------------------+-----------------------------------
+                                  Total |      9,012      100.00
+. 
+. rename z_brdxdy yob
+. replace yob = 1900+yob
+variable yob was byte now int
+(9,012 real changes made)
+. replace yob = .w if yob<1900
+(27 real changes made, 27 to missing)
+. 
+. 
+. //Personality
+. rename z_rh001rec extra
+. rename z_rh003rec openn
+. rename z_rh005rec neuro
+. rename z_rh007rec consc
+. rename z_rh009rec agree
+. 
+. //IQ
+. rename gwiiq_bm iq
+.         
+. * Reverse Raw PGSs beacuse of LDpred
+. foreach var of varlist *PGS{
+  2.         replace `var' = `var'*-1
+  3.         }
+(9,012 real changes made)
+(9,012 real changes made)
+(9,012 real changes made)
+. *
+. 
+. //Standardize
+. foreach var of varlist *PGS{
+  2.         egen `var'_std = std(`var')
+  3.         replace `var' = `var'_std
+  4.         drop `var'_std
+  5.         }
+(9,012 real changes made)
+(9,012 real changes made)
+(9,012 real changes made)
+. 
+. mvdecode iq extra openn neuro consc agree, mv(-3 = .r)
+       extra: 252 missing values generated
+       openn: 154 missing values generated
+       neuro: 228 missing values generated
+       consc: 122 missing values generated
+       agree: 132 missing values generated
+. 
+. save "${DIRDATA}/CleanData/WLS_cognoncogPred.dta", replace
+file /mnt/department/econ/biroli/geighei/data/WLS//CleanData/WLS_cognoncogPred.dta saved
+. } // end CREATEDATA
+
+. 
+. 
+. 
+. if $RUNREG==1{
+. use "${DIRDATA}/CleanData/WLS_cognoncogPred.dta", clear
+. 
+. ****************************************************************************
+. *****************  MULTIVARIATE ANALYSIS - WLS *****************************
+. ****************************************************************************
+. gen yob2 = yob^2
+(27 missing values generated)
+. 
+. foreach yvar in iq extra openn neuro consc agree{
+  2.         sum `yvar'
+  3.         des `yvar'
+  4.         reg `yvar' COG_PGS NONCOG_PGS yob yob2 male ev1-ev20, cluster(familypriv)
+  5. }
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+          iq |      5,732    102.1359    14.72436         61        145
+
+              storage   display    value
+variable name   type    format     label      variable label
+----------------------------------------------------------------------------------------
+iq              int     %8.0g               * RA bst msure iq scre mppd frm raw
+                                                hnmn-nlsn
+
+Linear regression                               Number of obs     =      5,705
+                                                F(23, 5693)       =          .
+                                                Prob > F          =          .
+                                                R-squared         =     0.1489
+                                                Root MSE          =      13.62
+
+                         (Std. Err. adjusted for 5,694 clusters in familypriv)
+------------------------------------------------------------------------------
+             |               Robust
+          iq |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+     COG_PGS |  -4.497973   .1961847   -22.93   0.000    -4.882569   -4.113376
+  NONCOG_PGS |  -1.912432   .2009058    -9.52   0.000    -2.306284    -1.51858
+         yob |   -1314.55   974.2616    -1.35   0.177    -3224.474    595.3739
+        yob2 |   .3405294   .2519478     1.35   0.177    -.1533844    .8344431
+        male |   .7061551   .3659533     1.93   0.054    -.0112528    1.423563
+         ev1 |   -27.5199   21.20916    -1.30   0.194    -69.09792    14.05813
+         ev2 |  -21.34621   14.78898    -1.44   0.149    -50.33824    7.645818
+         ev3 |   5.145173    15.2556     0.34   0.736    -24.76161    35.05196
+         ev4 |  -3.403348   13.12918    -0.26   0.795    -29.14155    22.33485
+         ev5 |  -20.51413   14.80005    -1.39   0.166    -49.52787    8.499601
+         ev6 |   85.08545   14.37625     5.92   0.000     56.90252    113.2684
+         ev7 |   -15.2622    14.3549    -1.06   0.288    -43.40327    12.87888
+         ev8 |   48.92307   14.00682     3.49   0.000     21.46438    76.38176
+         ev9 |    13.2001   14.81688     0.89   0.373    -15.84663    42.24683
+        ev10 |  -12.29836   14.72394    -0.84   0.404    -41.16289    16.56616
+        ev11 |  -3.805935   14.47993    -0.26   0.793    -32.19211    24.58024
+        ev12 |   6.621485   14.94535     0.44   0.658    -22.67709    35.92006
+        ev13 |  -44.32443   14.95453    -2.96   0.003    -73.64101   -15.00785
+        ev14 |   16.51624   14.89284     1.11   0.267    -12.67939    45.71187
+        ev15 |  -16.79554   15.06794    -1.11   0.265    -46.33443    12.74335
+        ev16 |   26.13089   14.91448     1.75   0.080    -3.107168    55.36894
+        ev17 |  -25.23455   14.64295    -1.72   0.085    -53.94031    3.471212
+        ev18 |  -.0427016   14.72306    -0.00   0.998    -28.90551     28.8201
+        ev19 |  -15.63132   14.67392    -1.07   0.287    -44.39779    13.13515
+        ev20 |  -10.70739   14.78606    -0.72   0.469     -39.6937    18.27892
+       _cons |    1268719   943930.8     1.34   0.179    -581744.4     3119183
+------------------------------------------------------------------------------
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+       extra |      8,040    8.506965    2.627081          2         12
+
+              storage   display    value
+variable name   type    format     label      variable label
+----------------------------------------------------------------------------------------
+extra           byte    %8.0g      QQJUSTMISSING
+                                            * R4 total score for extraversion
+
+Linear regression                               Number of obs     =      8,040
+                                                F(25, 6257)       =       6.76
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.0184
+                                                Root MSE          =     2.6068
+
+                         (Std. Err. adjusted for 6,258 clusters in familypriv)
+------------------------------------------------------------------------------
+             |               Robust
+       extra |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+     COG_PGS |    .069372   .0318526     2.18   0.029     .0069301     .131814
+  NONCOG_PGS |   .0334463    .032214     1.04   0.299    -.0297043    .0965969
+         yob |   2.629319   2.603362     1.01   0.313    -2.474164    7.732801
+        yob2 |  -.0006742   .0006704    -1.01   0.315    -.0019885      .00064
+        male |  -.5467059   .0585145    -9.34   0.000    -.6614143   -.4319975
+         ev1 |   3.459041   2.861095     1.21   0.227    -2.149687    9.067769
+         ev2 |  -.6874859   2.515871    -0.27   0.785    -5.619457    4.244485
+         ev3 |  -11.75426   2.466137    -4.77   0.000    -16.58874   -6.919785
+         ev4 |  -2.873705   2.360381    -1.22   0.223    -7.500861    1.753452
+         ev5 |  -3.508885   2.589129    -1.36   0.175    -8.584467    1.566696
+         ev6 |   3.634598   2.569222     1.41   0.157    -1.401958    8.671154
+         ev7 |  -7.548354   2.467591    -3.06   0.002    -12.38568   -2.711028
+         ev8 |   .7167843     2.5017     0.29   0.774    -4.187407    5.620975
+         ev9 |  -2.107943   2.560281    -0.82   0.410    -7.126973    2.911086
+        ev10 |   6.630357   2.684171     2.47   0.014      1.36846    11.89225
+        ev11 |  -1.695879   2.659897    -0.64   0.524     -6.91019    3.518431
+        ev12 |  -4.385407   2.664948    -1.65   0.100    -9.609619    .8388049
+        ev13 |  -.2775291   2.634217    -0.11   0.916    -5.441498     4.88644
+        ev14 |   2.263842   2.676036     0.85   0.398    -2.982107    7.509792
+        ev15 |   1.169537   2.650778     0.44   0.659    -4.026898    6.365972
+        ev16 |  -3.452231   2.639851    -1.31   0.191    -8.627244    1.722782
+        ev17 |    1.99615   2.703684     0.74   0.460    -3.303998    7.296299
+        ev18 |   1.747008   2.649945     0.66   0.510    -3.447794     6.94181
+        ev19 |   .8782407   2.631929     0.33   0.739    -4.281243    6.037724
+        ev20 |  -.8258916   2.664268    -0.31   0.757    -6.048771    4.396987
+       _cons |  -2554.486   2527.383    -1.01   0.312    -7509.024    2400.053
+------------------------------------------------------------------------------
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+       openn |      8,138    9.317277    2.460772          2         12
+
+              storage   display    value
+variable name   type    format     label      variable label
+----------------------------------------------------------------------------------------
+openn           byte    %8.0g      QQJUSTMISSING
+                                            * R4 total score for openness
+
+Linear regression                               Number of obs     =      8,138
+                                                F(24, 6305)       =          .
+                                                Prob > F          =          .
+                                                R-squared         =     0.0434
+                                                Root MSE          =     2.4105
+
+                         (Std. Err. adjusted for 6,306 clusters in familypriv)
+------------------------------------------------------------------------------
+             |               Robust
+       openn |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+     COG_PGS |  -.1724345   .0291231    -5.92   0.000    -.2295256   -.1153434
+  NONCOG_PGS |   -.177156   .0295157    -6.00   0.000    -.2350169   -.1192952
+         yob |   4.952159   2.352777     2.10   0.035     .3399162    9.564402
+        yob2 |  -.0012656   .0006056    -2.09   0.037    -.0024527   -.0000784
+        male |   .8285578   .0530171    15.63   0.000     .7246264    .9324893
+         ev1 |  -1.545677   2.355489    -0.66   0.512    -6.163238    3.071883
+         ev2 |   2.182956   2.311167     0.94   0.345    -2.347717     6.71363
+         ev3 |   .2323074   2.326677     0.10   0.920    -4.328771    4.793385
+         ev4 |   1.740085   2.459324     0.71   0.479    -3.081027    6.561196
+         ev5 |   1.795623   2.368257     0.76   0.448    -2.846966    6.438213
+         ev6 |   6.360418   2.332577     2.73   0.006     1.787774    10.93306
+         ev7 |  -3.779276   2.394845    -1.58   0.115    -8.473987    .9154341
+         ev8 |   3.441944   2.306189     1.49   0.136    -1.078971    7.962859
+         ev9 |   .9528107   2.359149     0.40   0.686    -3.671925    5.577546
+        ev10 |   5.735596   2.510847     2.28   0.022     .8134826    10.65771
+        ev11 |   2.238537   2.443864     0.92   0.360    -2.552269    7.029343
+        ev12 |  -1.006555   2.456449    -0.41   0.682     -5.82203     3.80892
+        ev13 |  -3.200715   2.440676    -1.31   0.190    -7.985272    1.583841
+        ev14 |   .5199384   2.458546     0.21   0.833    -4.299648    5.339525
+        ev15 |  -1.842681   2.437916    -0.76   0.450    -6.621826    2.936464
+        ev16 |  -.4383751    2.49456    -0.18   0.861    -5.328562    4.451811
+        ev17 |   4.586508   2.453685     1.87   0.062    -.2235496    9.396566
+        ev18 |   .4502032   2.385579     0.19   0.850    -4.226343     5.12675
+        ev19 |  -1.169965   2.419876    -0.48   0.629    -5.913746    3.573815
+        ev20 |   .2085808   2.430016     0.09   0.932    -4.555077    4.972239
+       _cons |   -4835.18   2285.131    -2.12   0.034    -9314.814   -355.5459
+------------------------------------------------------------------------------
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+       neuro |      8,064    6.283978    2.933673          2         12
+
+              storage   display    value
+variable name   type    format     label      variable label
+----------------------------------------------------------------------------------------
+neuro           byte    %8.0g      QQJUSTMISSING
+                                            * R4 total score for neuroticism
+
+Linear regression                               Number of obs     =      8,064
+                                                F(24, 6267)       =          .
+                                                Prob > F          =          .
+                                                R-squared         =     0.0217
+                                                Root MSE          =     2.9062
+
+                         (Std. Err. adjusted for 6,268 clusters in familypriv)
+------------------------------------------------------------------------------
+             |               Robust
+       neuro |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+     COG_PGS |   .0621372   .0353295     1.76   0.079    -.0071207     .131395
+  NONCOG_PGS |   .1079053   .0357519     3.02   0.003     .0378194    .1779912
+         yob |     .29445   2.854436     0.10   0.918    -5.301222    5.890122
+        yob2 |   -.000072   .0007351    -0.10   0.922     -.001513    .0013691
+        male |  -.7461762   .0647549   -11.52   0.000    -.8731179   -.6192344
+         ev1 |  -3.206266   2.879427    -1.11   0.266    -8.850928    2.438397
+         ev2 |  -3.322583   2.881129    -1.15   0.249    -8.970584    2.325417
+         ev3 |  -10.84115   2.930716    -3.70   0.000    -16.58636   -5.095943
+         ev4 |   .6210786   2.855868     0.22   0.828      -4.9774    6.219557
+         ev5 |   .8932989   2.882666     0.31   0.757    -4.757715    6.544313
+         ev6 |   5.610718   2.917221     1.92   0.054    -.1080351    11.32947
+         ev7 |   1.372893   2.858755     0.48   0.631    -4.231247    6.977032
+         ev8 |  -2.264307    2.82144    -0.80   0.422    -7.795297    3.266683
+         ev9 |  -.1101283   2.875641    -0.04   0.969     -5.74737    5.527113
+        ev10 |   -.695932   2.979016    -0.23   0.815    -6.535823    5.143959
+        ev11 |  -4.515106   2.961135    -1.52   0.127    -10.31994    1.289732
+        ev12 |   6.883769   2.959672     2.33   0.020     1.081798    12.68574
+        ev13 |  -1.559756   2.977251    -0.52   0.600    -7.396188    4.276676
+        ev14 |  -3.810677   3.002374    -1.27   0.204    -9.696358    2.075004
+        ev15 |   3.298273   2.962806     1.11   0.266    -2.509841    9.106387
+        ev16 |  -.4818015   2.969664    -0.16   0.871     -6.30336    5.339757
+        ev17 |  -3.556565   2.932174    -1.21   0.225    -9.304631    2.191502
+        ev18 |   1.481887   2.919369     0.51   0.612    -4.241076     7.20485
+        ev19 |  -1.276754   2.911782    -0.44   0.661    -6.984843    4.431336
+        ev20 |  -2.350096    2.93098    -0.80   0.423    -8.095822     3.39563
+       _cons |   -293.714   2770.946    -0.11   0.916    -5725.716    5138.289
+------------------------------------------------------------------------------
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+       consc |      8,170    9.511995    2.308906          2         12
+
+              storage   display    value
+variable name   type    format     label      variable label
+----------------------------------------------------------------------------------------
+consc           byte    %8.0g      QQJUSTMISSING
+                                            * R4 total score for conscientiousness
+
+Linear regression                               Number of obs     =      8,170
+                                                F(24, 6316)       =          .
+                                                Prob > F          =          .
+                                                R-squared         =     0.0061
+                                                Root MSE          =     2.3053
+
+                         (Std. Err. adjusted for 6,317 clusters in familypriv)
+------------------------------------------------------------------------------
+             |               Robust
+       consc |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+     COG_PGS |   .0704678   .0276816     2.55   0.011     .0162025    .1247331
+  NONCOG_PGS |   .0927627   .0274969     3.37   0.001     .0388594    .1466661
+         yob |  -1.130677   2.184448    -0.52   0.605    -5.412937    3.151583
+        yob2 |   .0002869   .0005627     0.51   0.610    -.0008161    .0013899
+        male |  -.1282078   .0510441    -2.51   0.012    -.2282714   -.0281441
+         ev1 |  -1.364649   2.987412    -0.46   0.648    -7.220992    4.491693
+         ev2 |   3.608986   2.203145     1.64   0.101    -.7099272    7.927899
+         ev3 |   2.067084   2.342931     0.88   0.378    -2.525857    6.660025
+         ev4 |   -2.10853   1.935467    -1.09   0.276    -5.902702    1.685642
+         ev5 |   3.145434   2.278005     1.38   0.167     -1.32023    7.611098
+         ev6 |  -2.656308   2.289289    -1.16   0.246    -7.144093    1.831476
+         ev7 |   1.360748   2.184849     0.62   0.533    -2.922297    5.643794
+         ev8 |    .021453   2.143834     0.01   0.992    -4.181191    4.224097
+         ev9 |   1.514533   2.198072     0.69   0.491    -2.794434      5.8235
+        ev10 |   .6384939    2.31832     0.28   0.783      -3.9062    5.183188
+        ev11 |   .5194668   2.297277     0.23   0.821    -3.983977    5.022911
+        ev12 |  -3.917472   2.318119    -1.69   0.091    -8.461773    .6268298
+        ev13 |  -2.207832   2.314797    -0.95   0.340     -6.74562    2.329956
+        ev14 |     -4.932   2.329987    -2.12   0.034    -9.499566   -.3644342
+        ev15 |  -.3766369    2.27458    -0.17   0.868    -4.835586    4.082312
+        ev16 |  -4.891735   2.258955    -2.17   0.030    -9.320055   -.4634154
+        ev17 |   1.198019   2.250938     0.53   0.595    -3.214584    5.610622
+        ev18 |   .6486708   2.285508     0.28   0.777      -3.8317    5.129042
+        ev19 |   -1.63293   2.305945    -0.71   0.479    -6.153364    2.887505
+        ev20 |   .3392543   2.318049     0.15   0.884    -4.204909    4.883418
+       _cons |   1123.303   2120.266     0.53   0.596    -3033.139    5279.744
+------------------------------------------------------------------------------
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+       agree |      8,160    9.890686    2.042642          2         12
+
+              storage   display    value
+variable name   type    format     label      variable label
+----------------------------------------------------------------------------------------
+agree           byte    %8.0g      QQJUSTMISSING
+                                            * R4 total score for agreeableness
+
+Linear regression                               Number of obs     =      8,160
+                                                F(24, 6305)       =          .
+                                                Prob > F          =          .
+                                                R-squared         =     0.0289
+                                                Root MSE          =      2.016
+
+                         (Std. Err. adjusted for 6,306 clusters in familypriv)
+------------------------------------------------------------------------------
+             |               Robust
+       agree |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+     COG_PGS |   .0435831   .0246581     1.77   0.077    -.0047551    .0919214
+  NONCOG_PGS |  -.0202902    .024709    -0.82   0.412    -.0687283    .0281479
+         yob |  -.3513132   1.956936    -0.18   0.858    -4.187574    3.484948
+        yob2 |   .0000839   .0005043     0.17   0.868    -.0009047    .0010726
+        male |   -.577872   .0451649   -12.79   0.000    -.6664105   -.4893334
+         ev1 |  -2.200029   1.672505    -1.32   0.188    -5.478708     1.07865
+         ev2 |   1.319185   2.004246     0.66   0.510    -2.609819    5.248188
+         ev3 |   9.094842   2.129867     4.27   0.000     4.919579    13.27011
+         ev4 |   1.835211   1.804825     1.02   0.309     -1.70286    5.373282
+         ev5 |  -.3841388    2.11123    -0.18   0.856    -4.522868    3.754591
+         ev6 |  -2.452628   2.103001    -1.17   0.244    -6.575227     1.66997
+         ev7 |   2.351115   1.970886     1.19   0.233    -1.512493    6.214723
+         ev8 |   1.418069   1.955262     0.73   0.468    -2.414909    5.251048
+         ev9 |  -1.858541   1.979093    -0.94   0.348    -5.738236    2.021154
+        ev10 |  -2.982764   1.987174    -1.50   0.133    -6.878301    .9127725
+        ev11 |    -1.3798   1.974086    -0.70   0.485     -5.24968    2.490079
+        ev12 |  -3.473858   2.057139    -1.69   0.091     -7.50655    .5588338
+        ev13 |   .1200644   1.973301     0.06   0.951    -3.748277    3.988406
+        ev14 |  -1.541729    2.00407    -0.77   0.442    -5.470388    2.386931
+        ev15 |  -4.736823   2.025003    -2.34   0.019    -8.706518   -.7671281
+        ev16 |  -1.062535   2.044231    -0.52   0.603    -5.069923    2.944853
+        ev17 |   .1118677   2.003281     0.06   0.955    -3.815245     4.03898
+        ev18 |   1.624838   1.994636     0.81   0.415    -2.285328    5.535004
+        ev19 |  -.2895574   2.003048    -0.14   0.885    -4.216213    3.637099
+        ev20 |  -2.451559   1.979957    -1.24   0.216    -6.332949     1.42983
+       _cons |   375.7543   1898.337     0.20   0.843    -3345.633    4097.141
+------------------------------------------------------------------------------
+. 
+. } // end RUNREG
+
+. 
+. log close
+      name:  <unnamed>
+       log:  /mnt/data/Research/cogNoncogGSEM/analysis/WLS/output/cogNoncog_WLS.log
+  log type:  text
+ closed on:  27 Feb 2019, 19:17:55
+----------------------------------------------------------------------------------------

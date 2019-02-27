@@ -1,316 +1,166 @@
-global user db3275
-//global user dbelsky
-//********************************************************************************//
-//********************************************************************************//
-//DUNEDIN
-//********************************************************************************//
-//********************************************************************************//
-use "/Users/$user/Box/Belsky/NonCogPGS/PRSiceScores/NonCogLDPScores_Dunedin.dta", clear
-merge 1:1 snum using "/Users/$user/Box/DPPP_genomics/Genomics_OUT/PGSFiles/PCs/DunedinPCs100.dta", keepus(zpc*) nogen
+* Project:		cogNoncog
+* Content:		prediction Analysis
+* Author:		Pietro 
+* Adapted by:		Dan Belsky
+* Date:			February 2019
 
-merge 1:1 snum using "/Users/$user/Box/Belsky/NonCogPGS/NZ_phenodata/PGS_nonCog_NZ_10Sept.dta", keepus(lscuw311-WFSIQ38) nogen
-merge 1:1 snum using "/Users/$user/Box/Belsky/CerebCortex2018/Dunedin Phenotypes/IQ3to38.dta", nogen
-merge 1:1 snum using "/Users/$user/Box/Belsky/PNAS2018/Code/SocMob_Dunedin_Archive.dta", nogen keepus(Educ263238 sex)	
+/* 
+This code runs the prediction analysis of the cog and noncog PGS in the WLS data
+*/
 
-gen selfcon = lsc*-1
+********************************************************************************
+*********************************** PREAMBLE ***********************************
+********************************************************************************
+capture log close
+clear all
+est clear
+set more off
+set emptycells drop
+set matsize 10000
+set maxvar 20000
+
+global DIRPGS  "/mnt/data/Research/cogNoncogGSEM/PGS/WLS"
+global DIRDATA "/mnt/department/econ/biroli/geighei/data/WLS/"
+global DIRCODE "/mnt/data/Research/cogNoncogGSEM/analysis/WLS"
+
+
+cd ${DIRCODE}/output
+
+log using cogNoncog_WLS.log, replace
+
+global CREATEDATA = 1
+global RUNREG     = 1
+
+
+
+if $CREATEDATA==1{
+********************************************************************************
+*******************************MERGE THE DATA **********************************
+********************************************************************************
+*------------ Import the PGS created in plink
+import delimited "${DIRPGS}/COG_PGS_WLS.profile", clear delimiter(space, collapse)
+drop v1 pheno cnt cnt2 
+rename score COG_PGS
+compress
+save "${DIRPGS}/cogNoncogPGS.dta", replace
+
+import delimited "${DIRPGS}/NONCOG_PGS_WLS.profile", clear delimiter(space, collapse)
+drop v1 pheno cnt cnt2 
+rename score NONCOG_PGS
+compress
+merge 1:1 fid iid using "${DIRPGS}/cogNoncogPGS.dta"
+drop _merge
+save "${DIRPGS}/cogNoncogPGS.dta", replace
+
+import delimited "${DIRPGS}/EA3_PGS_WLS.profile", clear delimiter(space, collapse)
+drop v1 pheno cnt cnt2 
+rename score EA3_PGS
+compress
+merge 1:1 fid iid using "${DIRPGS}/cogNoncogPGS.dta"
+drop _merge
+
+duplicates report fid iid
+destring fid, force gen(subject_id)
+destring iid, force gen(iid_n)
+
+/*  fid and iid are the same, expect for those that a NA for one of them. I drop them and end up with the sampe of 9012 individuals that is suggested by the WLS
+
+"After the GAC’s standardized QC procedures, including resolution of sample quality and identity, 
+genotypes are available on dbGaP for 9,012 unique WLS study participants. 
+(Note for 15 pairs of monozygotic twins, only one member of each pair is retained in the unique set of 9,012 participants.)"
+
+
+gen diff = subject_id - iid_n
+sum diff
+*/
+
+drop if missing(subject_id)==1
+drop if missing(iid_n)==1
+drop fid iid iid_n
+save "${DIRPGS}/cogNoncogPGS.dta", replace
+
+*------------ Merge with the principal components
+import delimited "${DIRDATA}/RawData/WLS_Genotypic_Data/AA_Readme/Principal_components.csv", clear delimiter(comma, collapse)
+merge 1:1 subject_id using "${DIRPGS}/cogNoncogPGS.dta"
+drop _merge
+save "${DIRPGS}/cogNoncogPGS.dta", replace
+
+*------------ Merge with the information data
+import delimited "${DIRDATA}/RawData/WLS_Genotypic_Data/AA_Readme/Sample_analysis.csv", clear delimiter(comma, collapse)
+destring subject_id, replace force 
+drop if missing(subject_id)==1
+drop sample_id 
+merge 1:1 subject_id using "${DIRPGS}/cogNoncogPGS.dta"
+drop _merge
+save "${DIRPGS}/cogNoncogPGS.dta", replace
+
+
+*------------ Merge with the phenotypic data
+use "${DIRDATA}/RawData/WLS_Survey_PhenotypicLong-formData-13_06/wls_plg_13_06.dta", clear
+keep idpriv-rlifewv srbmi-rbmc6  *iq*  z_rh00*
+
+destring subject_id , replace
+drop if missing(subject_id)==1
+duplicates report subject_id if subject_id <.
+duplicates drop subject_id, force
+merge 1:1 subject_id using "${DIRPGS}/cogNoncogPGS.dta"
+drop _merge
+
+
+*------------ Clean and rename some vars
+recode z_sexrsp (2 = 0)
+rename z_sexrsp male
+tab male
+
+rename z_brdxdy yob
+replace yob = 1900+yob
+replace yob = .w if yob<1900
+
 
 //Personality
-rename BF_ex extr
-rename BF_ag agre
-rename BF_con CON
-rename BF_neu neur
-rename BF_opn open
+rename z_rh001rec extra
+rename z_rh003rec openn
+rename z_rh005rec neuro
+rename z_rh007rec consc
+rename z_rh009rec agree
 
-//Childhood IQ
-foreach x in inf sim ari voc pic blk obj cod {
-	foreach y in 7 9 11 13{ 
-		egen Z`y' = std(`x'_ma`y')
-		}
-	egen `x' = rowmean(Z7 Z9 Z11 Z13)
-	drop Z7 Z9 Z11 Z13 
-	}
+//IQ
+rename gwiiq_bm iq
 	
-//Reverse Raw PGSs
-foreach x in pgsEA3LDPINF pgsCPLDPINF pgsNONCOGLDPINF pgsCOGLDPINF{
-	replace `x' = `x'*-1
+* Reverse Raw PGSs beacuse of LDpred
+foreach var of varlist *PGS{
+	replace `var' = `var'*-1
+	}
+*
+
+//Standardize
+foreach var of varlist *PGS{
+	egen `var'_std = std(`var')
+	replace `var' = `var'_std
+	drop `var'_std
 	}
 
-save "/Users/$user/Box/Belsky/NonCogPGS/Code/CogNonCog_Dunedin_181121.dta", replace
+mvdecode iq extra openn neuro consc agree, mv(-3 = .r)
 
-//******************************************************************************//
-// PGS Correlations
-//******************************************************************************//
-use "/Users/$user/Box/Belsky/NonCogPGS/Code/CogNonCog_Dunedin_181121.dta", clear
-
-foreach x in pgsEA3LDPINF pgsCPLDPINF pgsNONCOGLDPINF pgsCOGLDPINF {
-	reg `x' zpc*
-	predict r`x', r
-	egen zr`x'=std(r`x')
-	}
-corr zrpgs*
-matrix X = r(C)
-putexcel set "/Users/$user/Box/Belsky/NonCogPGS/Code/CogNonCog_181121.xlsx", sheet(DunedinPGSCorr) modify
-putexcel a1=matrix(X), names
-
-
-//****************************************************************************//
-//****************************************************************************//
-//UNIVARIATE ANALYSIS - DUNEDIN
-//****************************************************************************//
-//****************************************************************************//
-	//UNIVARIATE PROGRAM - DUNEDIN 
-capture program drop FX 
-program define FX
-args y 
-matrix Fx = J(1,6,999)
-capture drop Y
-egen Y = std(`y')
-foreach x in pgsEA3LDPINF pgsCPLDPINF pgsNONCOGLDPINF pgsCOGLDPINF {
-	capture drop Z
-	egen Z = std(`x')
-	reg Y zpc* sex, robust
-	local R2 = e(r2)
-	reg Y Z zpc* sex , robust 
-	matrix A = e(N), _b[Z], _se[Z], e(r2)-`R2', 2*ttail(e(df_r), abs(_b[Z]/_se[Z])), sqrt(e(r2)-`R2')
-	matrix rownames A = `x'
-	matrix Fx = Fx \ A
-	drop Z
-	}
-matrix Fx = Fx[2...,1...]
-matrix colnames Fx = N Beta SE DeltaR2 Pval SqrtDeltaR2
-matrix `y' = Fx
-drop Y
-end
-//****************************************************************************//
-#delimit ;
-foreach PH in 
-	inf voc sim ari blk pic obj cod
-	wfsiq713 wviq713 wpiq713 lscuw311
-	inf_ss38 voc_ss38 sim_ss38 ar_ss38 bd_ss38 mr_ss38 pc_ss38 ds_ss38 ss_ss38 dsc_ss38
-	WFSIQ38 vci38 pri38 wmi38 psi38
-	open CON extr agre neur 
-	{ ; #delimit cr
-	FX `PH'
-	}
-	
-matrix Fx1 = J(1,24,999)
-matrix colnames Fx1 = N Beta_EA SE DeltaR2 Pval SqrtDeltaR2 N Beta_CP SE DeltaR2 Pval SqrtDeltaR2 N Beta_NC SE DeltaR2 Pval SqrtDeltaR2 N Beta_Cog SE DeltaR2 Pval SqrtDeltaR2
-#delimit ;
-foreach PH in 
-	inf voc sim ari blk pic obj cod
-	wfsiq713 wviq713 wpiq713 lscuw311
-	inf_ss38 voc_ss38 sim_ss38 ar_ss38 bd_ss38 mr_ss38 pc_ss38 ds_ss38 ss_ss38 dsc_ss38
-	WFSIQ38 vci38 pri38 wmi38 psi38
-	open CON extr agre neur 
-	{ ; #delimit cr
-	matrix `PH' = `PH'[1,1...], `PH'[2,1...], `PH'[3,1...] , `PH'[4,1...] 
-	matrix rownames `PH' = `PH'
-	matrix Fx1 = Fx1 \ `PH'
-	}	
-matrix Fx1 = Fx1[2...,1...]	
-matrix list Fx1
-
-putexcel set "/Users/$user/Box/Belsky/NonCogPGS/Code/CogNonCog_181121.xlsx", sheet(DunedinUnivar) modify
-putexcel a1 = matrix(Fx1), names
-//********************************************************************************//
-
-
-//****************************************************************************//
-//****************************************************************************//
-//MULTIVARIATE ANALYSIS - DUNEDIN 
-//****************************************************************************
-//****************************************************************************//
-	//MULTIVARIATE PROGRAM - DUNEDIN 
-capture program drop FXmv 
-program define FXmv
-args y 
-	preserve
-	capture drop Y
-	egen Y = std(`y')
-	foreach x in pgsNONCOGLDPINF pgsCOGLDPINF{
-		egen z`x' = std(`x')
-		}
-	reg Y zpgsCOGLDPINF zpc* sex, robust
-	local R2cog = e(r2)
-	reg Y zpgsNONCOGLDPINF zpc* sex, robust
-	local R2nc = e(r2)	
-	reg Y zpgsNONCOGLDPINF zpgsCOGLDPINF zpc* sex , robust 
-	matrix A = e(N), _b[zpgsNONCOGLDPINF], _se[zpgsNONCOGLDPINF], e(r2)-`R2cog', 2*ttail(e(df_r), abs(_b[zpgsNONCOGLDPINF]/_se[zpgsNONCOGLDPINF])) , sqrt(e(r2)-`R2cog'), ///
-					_b[zpgsCOGLDPINF], _se[zpgsCOGLDPINF], e(r2)-`R2nc', 2*ttail(e(df_r), abs(_b[zpgsCOGLDPINF]/_se[zpgsCOGLDPINF])), sqrt(e(r2)-`R2nc') 
-	matrix rownames A = `y'
-	matrix colnames A = N Beta_nc SE_nc DeltaR2_nc Pval_nc SqrtDeltaR2_nc Beta_c SE_c DeltaR2_c Pval_c SqrtDeltaR2_c
-	matrix `y' = A
-	drop Y
-	restore
-end
-//****************************************************************************//
-matrix mvFX = J(1,11,999)
-#delimit ;
-foreach PH in 
-	inf voc sim ari blk pic obj cod
-	wfsiq713 wviq713 wpiq713 lscuw311
-	inf_ss38 voc_ss38 sim_ss38 ar_ss38 bd_ss38 mr_ss38 pc_ss38 ds_ss38 ss_ss38 dsc_ss38
-	WFSIQ38 vci38 pri38 wmi38 psi38
-	open CON extr agre neur 
-	{ ; #delimit cr
-	FXmv `PH'
-	matrix mvFX = mvFX \ `PH'
-	}
-matrix mvFX = mvFX[2...,1...]
-matrix colnames mvFX = N Beta_nc SE_nc DeltaR2_nc Pval_nc SqrtDeltaR2_nc Beta_c SE_c DeltaR2_c Pval_c SqrtDeltaR2_c
-matrix list mvFX
-
-putexcel set "/Users/$user/Box/Belsky/NonCogPGS/Code/CogNonCog_181121.xlsx", sheet(DunedinMultivar) modify
-putexcel a1 = matrix(mvFX), names
-	
-//********************************************************************************//
+save "${DIRDATA}/CleanData/WLS_cognoncogPred.dta", replace
+} // end CREATEDATA
 
 
 
+if $RUNREG==1{
+use "${DIRDATA}/CleanData/WLS_cognoncogPred.dta", clear
 
-//********************************************************************************//
-//********************************************************************************//
-//ERISK
-//********************************************************************************//
-//********************************************************************************//
-use "/Users/$user/Box/DPPP_genomics/Genomics_OUT/PGSFiles/PCs/ERisk/ZygosityUpdate_2018.dta", clear
-merge 1:1 atwinid using  "/Users/$user/Box/Belsky/NonCogPGS/PRSiceScores/NonCogLDPScores_ERisk.dta", nogen
-merge 1:1 atwinid using "/Users/$user/Box/DPPP_genomics/Genomics_OUT/PGSFiles/PCs/ERiskTwinPCs.dta", keepus(zpc*) nogen
-merge 1:1 atwinid using "/Users/$user/Box/Belsky/NonCogPGS/Erisk_phenodata/Dan_20Sep18.dta", nogen
-merge 1:1 atwinid using "/Users/$user/Box/Belsky/PNAS2018/Code/SocMob_ERisk_Archive.dta", keepus(educachve) nogen
+****************************************************************************
+*****************  MULTIVARIATE ANALYSIS - WLS *****************************
+****************************************************************************
+gen yob2 = yob^2
 
-//Personality
-rename bfioe18 open
-rename bfice18 CON
-rename bfiee18 extr
-rename bfiae18 agre
-rename bfine18 neur
+foreach yvar in iq extra openn neuro consc agree{
+	des `yvar'
+	sum `yvar'
+	reg `yvar' COG_PGS NONCOG_PGS yob yob2 male ev1-ev20, cluster(familypriv)
+}
 
+} // end RUNREG
 
-//Reverse Raw PGSs
-foreach x in pgsEA3LDPINF pgsCPLDPINF pgsNONCOGLDPINF pgsCOGLDPINF{
-	replace `x' = `x'*-1
-	}
-
-save "/Users/$user/Box/Belsky/NonCogPGS/Code/CogNonCog_ERisk_181121.dta", replace
-
-
-
-//******************************************************************************//
-// PGS Correlations
-//******************************************************************************//
-use "/Users/$user/Box/Belsky/NonCogPGS/Code/CogNonCog_ERisk_181121.dta", clear
-
-foreach x in pgsEA3LDPINF pgsCPLDPINF pgsNONCOGLDPINF pgsCOGLDPINF {
-	reg `x' zpc*
-	predict r`x', r
-	egen zr`x'=std(r`x')
-	}
-corr zrpgs*
-matrix X = r(C)
-putexcel set "/Users/$user/Box/Belsky/NonCogPGS/Code/CogNonCog_181121.xlsx", sheet(ERiskPGSCorr) modify
-putexcel a1=matrix(X), names
-
-
-//****************************************************************************//
-//UNIVARIATE ANALYSIS - ERISK 
-//****************************************************************************//
-	//UNIVARIATE PROGRAM - ERISK 
-capture program drop FX 
-program define FX
-args y 
-matrix Fx = J(1,6,999)
-capture drop Y
-egen Y = std(`y')
-foreach x in pgsEA3LDPINF pgsCPLDPINF pgsNONCOGLDPINF pgsCOGLDPINF{
-	capture drop Z
-	egen Z = std(`x')
-	reg Y zpc* sampsex, robust
-	local R2 = e(r2)
-	reg Y Z zpc* sampsex , robust cluster(familyid)
-	matrix A = e(N), _b[Z], _se[Z], e(r2)-`R2', 2*ttail(e(df_r), abs(_b[Z]/_se[Z])), sqrt(e(r2)-`R2')
-	matrix rownames A = `x'
-	matrix Fx = Fx \ A
-	drop Z
-	}
-matrix Fx = Fx[2...,1...]
-matrix colnames Fx = N Beta SE DeltaR2 Pval SqrtDeltaR2
-matrix `y' = Fx
-drop Y
-end
-//****************************************************************************//
-#delimit ;
-foreach PH in 
-	iq18e infe_ss18 mre_ss18 dsce_ss18
-	rvpapre18 rvpmlte18 rvptface18 swmstae18 swmteae18 swmmlre18 sspsple18 ssprsle
-	lowsc510e
-	open CON extr agre neur 
-	{ ; #delimit cr
-	FX `PH'
-	}	
-matrix Fx1 = J(1,24,999)
-matrix colnames Fx1 = N Beta_EA SE DeltaR2 Pval SqrtDeltaR2 N Beta_CP SE DeltaR2 Pval SqrtDeltaR2 N Beta_NC SE DeltaR2 Pval SqrtDeltaR2
-#delimit ;
-foreach PH in 
-	iq18e infe_ss18 mre_ss18 dsce_ss18
-	rvpapre18 rvpmlte18 rvptface18 swmstae18 swmteae18 swmmlre18 sspsple18 ssprsle
-	lowsc510e
-	open CON extr agre neur
-	{ ; #delimit cr
-	matrix `PH' = `PH'[1,1...], `PH'[2,1...], `PH'[3,1...], `PH'[4,1...]
-	matrix rownames `PH' = `PH'
-	matrix Fx1 = Fx1 \ `PH'
-	}	
-matrix Fx1 = Fx1[2...,1...]	
-matrix list Fx1
-putexcel set "/Users/$user/Box/Belsky/NonCogPGS/Code/CogNonCog_181121.xlsx", sheet(ERiskUnivar) modify
-putexcel a1 = matrix(Fx1), names
-
-//****************************************************************************//
-//MULTIVARIATE ANALYSIS - ERISK 
-//****************************************************************************//
-	//MULTIVARIATE PROGRAM - ERISK 
-capture program drop FXmv 
-program define FXmv
-args y 
-	preserve
-	capture drop Y
-	egen Y = std(`y')
-	foreach x in pgsNONCOGLDPINF pgsCOGLDPINF{
-		egen z`x' = std(`x')
-		}
-	reg Y zpgsCOGLDPINF zpc* sampsex, robust
-	local R2cog = e(r2)
-	reg Y zpgsNONCOGLDPINF zpc* sampsex, robust
-	local R2nc = e(r2)	
-	reg Y zpgsNONCOGLDPINF zpgsCOGLDPINF zpc* sampsex , robust 
-	matrix A = e(N), _b[zpgsNONCOGLDPINF], _se[zpgsNONCOGLDPINF], e(r2)-`R2cog', 2*ttail(e(df_r), abs(_b[zpgsNONCOGLDPINF]/_se[zpgsNONCOGLDPINF])) , sqrt(e(r2)-`R2cog'), ///
-					_b[zpgsCOGLDPINF], _se[zpgsCOGLDPINF], e(r2)-`R2nc', 2*ttail(e(df_r), abs(_b[zpgsCOGLDPINF]/_se[zpgsCOGLDPINF])), sqrt(e(r2)-`R2nc') 
-	matrix rownames A = `y'
-	matrix colnames A = N Beta_nc SE_nc DeltaR2_nc Pval_nc SqrtDeltaR2_nc Beta_c SE_c DeltaR2_c Pval_c SqrtDeltaR2_c
-	matrix `y' = A
-	drop Y
-	restore
-end
-//****************************************************************************//
-matrix mvFX = J(1,11,999)
-#delimit ;
-foreach PH in 
-	iq18e infe_ss18 mre_ss18 dsce_ss18
-	rvpapre18 rvpmlte18 rvptface18 swmstae18 swmteae18 swmmlre18 sspsple18 ssprsle
-	lowsc510e
-	open CON extr agre neur 
-	{ ; #delimit cr
-	FXmv `PH'
-	matrix mvFX = mvFX \ `PH'
-	}
-matrix mvFX = mvFX[2...,1...]
-matrix colnames mvFX = N Beta_nc SE_nc DeltaR2_nc Pval_nc SqrtDeltaR2_nc Beta_c SE_c DeltaR2_c Pval_c SqrtDeltaR2_c
-matrix list mvFX
-putexcel set "/Users/$user/Box/Belsky/NonCogPGS/Code/CogNonCog_181121.xlsx", sheet(ERiskMultivar) modify
-putexcel a1 = matrix(mvFX), names
-//********************************************************************************//
-
-
-
-
+log close

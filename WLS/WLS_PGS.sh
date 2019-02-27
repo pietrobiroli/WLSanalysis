@@ -35,10 +35,10 @@ head $INPUT_SUMSTAT/COG_excl_WLS/COG_excl_WLS.LDpred-r400_LDpred-inf.txt
 # chrom_1    752566    rs3094315    G    A    -8.7262e-03    1.5120e-04
 
 ## COG
-plink1.9 --bfile $INPUT_GENE/cleanWSL_unrelated --score $INPUT_SUMSTAT/COG_excl_WLS/COG_excl_WLS.LDpred-r400_LDpred-inf.txt 3 5 7 center --out COG_PGS_WLS --allow-no-sex
+plink1.9 --bfile $INPUT_GENE/cleanWSL --score $INPUT_SUMSTAT/COG_excl_WLS/COG_excl_WLS.LDpred-r400_LDpred-inf.txt 3 5 7 center --out COG_PGS_WLS --allow-no-sex
 
 ## NONCOG
-plink1.9 --bfile $INPUT_GENE/cleanWSL_unrelated --score $INPUT_SUMSTAT/NONCOG_excl_WLS/NONCOG_excl_WLS.LDpred-r400_LDpred-inf.txt 3 5 7 center --out NONCOG_PGS_WLS --allow-no-sex
+plink1.9 --bfile $INPUT_GENE/cleanWSL --score $INPUT_SUMSTAT/NONCOG_excl_WLS/NONCOG_excl_WLS.LDpred-r400_LDpred-inf.txt 3 5 7 center --out NONCOG_PGS_WLS --allow-no-sex
 
 ## EA
-plink1.9 --bfile $INPUT_GENE/cleanWSL_unrelated --score $INPUT_SUMSTAT/EA3_excl23andMe_WLS/EA3_excl23andMe_WLS.LDpred-r400_LDpred-inf.txt 3 5 7 center --out EA3_PGS_WLS --allow-no-sex
+plink1.9 --bfile $INPUT_GENE/cleanWSL --score $INPUT_SUMSTAT/EA3_excl23andMe_WLS/EA3_excl23andMe_WLS.LDpred-r400_LDpred-inf.txt 3 5 7 center --out EA3_PGS_WLS --allow-no-sex

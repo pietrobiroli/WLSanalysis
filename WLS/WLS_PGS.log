@@ -17,18 +17,18 @@ PLINK v1.90b5.2 64-bit (9 Jan 2018)            www.cog-genomics.org/plink/1.9/
 Logging to COG_PGS_WLS.log.
 Options in effect:
   --allow-no-sex
-  --bfile /mnt/department/econ/biroli/geighei/data/WLS/CleanData/WLS_Genotypic_Data/cleanWSL_unrelated
+  --bfile /mnt/department/econ/biroli/geighei/data/WLS/CleanData/WLS_Genotypic_Data/cleanWSL
   --out COG_PGS_WLS
   --score /mnt/data/Research/cogNoncogGSEM/3_Summary_statistics/LDpred_sumstats/excl_WLS/COG_excl_WLS/COG_excl_WLS.LDpred-r400_LDpred-inf.txt 3 5 7 center
 
 15912 MB RAM detected; reserving 7956 MB for main workspace.
 635421 variants loaded from .bim file.
-6539 people (3172 males, 3367 females) loaded from .fam.
+9109 people (4373 males, 4736 females) loaded from .fam.
 Using 1 thread (no multithreaded calculations invoked).
-Before main variant filters, 6539 founders and 0 nonfounders present.
+Before main variant filters, 9077 founders and 32 nonfounders present.
 Calculating allele frequencies... 0%1%2%3%4%5%6%7%8%9%10%11%12%13%14%15%16%17%18%19%20%21%22%23%24%25%26%27%28%29%30%31%32%33%34%35%36%37%38%39%40%41%42%43%44%45%46%47%48%49%50%51%52%53%54%55%56%57%58%59%60%61%62%63%64%65%66%67%68%69%70%71%72%73%74%75%76%77%78%79%80%81%82%83%84%85%86%87%88%89%90%91%92%93%94%95%96%97%98%99% done.
-Total genotyping rate is 0.999079.
-635421 variants and 6539 people pass filters and QC.
+Total genotyping rate is 0.999081.
+635421 variants and 9109 people pass filters and QC.
 Note: No phenotypes present.
 --score: 241118 valid predictors loaded.
 --score: Results written to COG_PGS_WLS.profile .
@@ -37,18 +37,18 @@ PLINK v1.90b5.2 64-bit (9 Jan 2018)            www.cog-genomics.org/plink/1.9/
 Logging to NONCOG_PGS_WLS.log.
 Options in effect:
   --allow-no-sex
-  --bfile /mnt/department/econ/biroli/geighei/data/WLS/CleanData/WLS_Genotypic_Data/cleanWSL_unrelated
+  --bfile /mnt/department/econ/biroli/geighei/data/WLS/CleanData/WLS_Genotypic_Data/cleanWSL
   --out NONCOG_PGS_WLS
   --score /mnt/data/Research/cogNoncogGSEM/3_Summary_statistics/LDpred_sumstats/excl_WLS/NONCOG_excl_WLS/NONCOG_excl_WLS.LDpred-r400_LDpred-inf.txt 3 5 7 center
 
 15912 MB RAM detected; reserving 7956 MB for main workspace.
 635421 variants loaded from .bim file.
-6539 people (3172 males, 3367 females) loaded from .fam.
+9109 people (4373 males, 4736 females) loaded from .fam.
 Using 1 thread (no multithreaded calculations invoked).
-Before main variant filters, 6539 founders and 0 nonfounders present.
+Before main variant filters, 9077 founders and 32 nonfounders present.
 Calculating allele frequencies... 0%1%2%3%4%5%6%7%8%9%10%11%12%13%14%15%16%17%18%19%20%21%22%23%24%25%26%27%28%29%30%31%32%33%34%35%36%37%38%39%40%41%42%43%44%45%46%47%48%49%50%51%52%53%54%55%56%57%58%59%60%61%62%63%64%65%66%67%68%69%70%71%72%73%74%75%76%77%78%79%80%81%82%83%84%85%86%87%88%89%90%91%92%93%94%95%96%97%98%99% done.
-Total genotyping rate is 0.999079.
-635421 variants and 6539 people pass filters and QC.
+Total genotyping rate is 0.999081.
+635421 variants and 9109 people pass filters and QC.
 Note: No phenotypes present.
 --score: 241118 valid predictors loaded.
 --score: Results written to NONCOG_PGS_WLS.profile .
@@ -57,18 +57,18 @@ PLINK v1.90b5.2 64-bit (9 Jan 2018)            www.cog-genomics.org/plink/1.9/
 Logging to EA3_PGS_WLS.log.
 Options in effect:
   --allow-no-sex
-  --bfile /mnt/department/econ/biroli/geighei/data/WLS/CleanData/WLS_Genotypic_Data/cleanWSL_unrelated
+  --bfile /mnt/department/econ/biroli/geighei/data/WLS/CleanData/WLS_Genotypic_Data/cleanWSL
   --out EA3_PGS_WLS
   --score /mnt/data/Research/cogNoncogGSEM/3_Summary_statistics/LDpred_sumstats/excl_WLS/EA3_excl23andMe_WLS/EA3_excl23andMe_WLS.LDpred-r400_LDpred-inf.txt 3 5 7 center
 
 15912 MB RAM detected; reserving 7956 MB for main workspace.
 635421 variants loaded from .bim file.
-6539 people (3172 males, 3367 females) loaded from .fam.
+9109 people (4373 males, 4736 females) loaded from .fam.
 Using 1 thread (no multithreaded calculations invoked).
-Before main variant filters, 6539 founders and 0 nonfounders present.
+Before main variant filters, 9077 founders and 32 nonfounders present.
 Calculating allele frequencies... 0%1%2%3%4%5%6%7%8%9%10%11%12%13%14%15%16%17%18%19%20%21%22%23%24%25%26%27%28%29%30%31%32%33%34%35%36%37%38%39%40%41%42%43%44%45%46%47%48%49%50%51%52%53%54%55%56%57%58%59%60%61%62%63%64%65%66%67%68%69%70%71%72%73%74%75%76%77%78%79%80%81%82%83%84%85%86%87%88%89%90%91%92%93%94%95%96%97%98%99% done.
-Total genotyping rate is 0.999079.
-635421 variants and 6539 people pass filters and QC.
+Total genotyping rate is 0.999081.
+635421 variants and 9109 people pass filters and QC.
 Note: No phenotypes present.
 --score: 245968 valid predictors loaded.
 --score: Results written to EA3_PGS_WLS.profile .
