@@ -28,7 +28,7 @@ cd ${DIRCODE}/output
 
 log using cogNoncog_WLS.log, replace
 
-global CREATEDATA = 1
+global CREATEDATA = 0
 global RUNREG     = 1
 
 
@@ -97,7 +97,7 @@ save "${DIRPGS}/cogNoncogPGS.dta", replace
 
 *------------ Merge with the phenotypic data
 use "${DIRDATA}/RawData/WLS_Survey_PhenotypicLong-formData-13_06/wls_plg_13_06.dta", clear
-keep idpriv-rlifewv srbmi-rbmc6  *iq*  z_rh00*
+keep idpriv-rlifewv srbmi-rbmc6  *iq*  z_rh00* z_edeqyr edat16 hidg64 z_ha103rea
 
 destring subject_id , replace
 drop if missing(subject_id)==1
@@ -108,6 +108,8 @@ drop _merge
 
 
 *------------ Clean and rename some vars
+mvdecode sibcount-rlifewv z_spwiiq_f-z_rh009rec z_ha103rea,  mv(-1 = .a \ -2 = .b \ -3 = .r \ -4 = .d \ -5 = .e )
+
 recode z_sexrsp (2 = 0)
 rename z_sexrsp male
 tab male
@@ -116,6 +118,7 @@ rename z_brdxdy yob
 replace yob = 1900+yob
 replace yob = .w if yob<1900
 
+rename z_edeqyr eduyears
 
 //Personality
 rename z_rh001rec extra
@@ -126,12 +129,15 @@ rename z_rh009rec agree
 
 //IQ
 rename gwiiq_bm iq
-	
-* Reverse Raw PGSs beacuse of LDpred
+
+//attractiveness
+rename z_ha103rea attractive
+
+/* Reverse Raw PGSs beacuse of LDpred
 foreach var of varlist *PGS{
 	replace `var' = `var'*-1
 	}
-*
+*/
 
 //Standardize
 foreach var of varlist *PGS{
@@ -140,7 +146,6 @@ foreach var of varlist *PGS{
 	drop `var'_std
 	}
 
-mvdecode iq extra openn neuro consc agree, mv(-3 = .r)
 
 save "${DIRDATA}/CleanData/WLS_cognoncogPred.dta", replace
 } // end CREATEDATA
@@ -155,7 +160,7 @@ use "${DIRDATA}/CleanData/WLS_cognoncogPred.dta", clear
 ****************************************************************************
 gen yob2 = yob^2
 
-foreach yvar in iq extra openn neuro consc agree{
+foreach yvar in eduyears iq extra openn neuro consc agree attractive{
 	des `yvar'
 	sum `yvar'
 	reg `yvar' COG_PGS NONCOG_PGS yob yob2 male ev1-ev20, cluster(familypriv)

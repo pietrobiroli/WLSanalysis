@@ -2,7 +2,7 @@
       name:  <unnamed>
        log:  /mnt/data/Research/cogNoncogGSEM/analysis/WLS/output/cogNoncog_WLS.log
   log type:  text
- opened on:  27 Feb 2019, 19:17:46
+ opened on:  27 Feb 2019, 19:35:08
 
 . 
 . global CREATEDATA = 1
@@ -136,7 +136,7 @@ file /mnt/data/Research/cogNoncogGSEM/PGS/WLS/cogNoncogPGS.dta saved
 . *------------ Merge with the phenotypic data
 . use "${DIRDATA}/RawData/WLS_Survey_PhenotypicLong-formData-13_06/wls_plg_13_06.dta", c
 > lear
-. keep idpriv-rlifewv srbmi-rbmc6  *iq*  z_rh00*
+. keep idpriv-rlifewv srbmi-rbmc6  *iq*  z_rh00* z_edeqyr edat16 hidg64 z_ha103rea
 . 
 . destring subject_id , replace
 subject_id: all characters numeric; replaced as long
@@ -169,6 +169,37 @@ Duplicates in terms of subject_id
 . 
 . 
 . *------------ Clean and rename some vars
+. mvdecode sibcount-rlifewv z_spwiiq_f-z_rh009rec z_ha103rea,  mv(-1 = .a \ -2 = .b \ -3
+>  = .r \ -4 = .d \ -5 = .e )
+       srel1: 29 missing values generated
+       srel2: 186 missing values generated
+       srel3: 4 missing values generated
+       srel4: 2 missing values generated
+    z_brdxdy: 27 missing values generated
+    z_deatyr: 8523 missing values generated
+       twinr: 461 missing values generated
+      rspw64: 625 missing values generated
+     rinlife: 5467 missing values generated
+    rlifesit: 5467 missing values generated
+    rliferpt: 5534 missing values generated
+     rlifewv: 5467 missing values generated
+  z_spwiiq_f: 1746 missing values generated
+  z_spwiiq_p: 3097 missing values generated
+  z_spwiiq_j: 1068 missing values generated
+  z_spwiiq_s: 3229 missing values generated
+     gwiiq_j: 426 missing values generated
+     gwiiq_f: 1735 missing values generated
+     swiiq_t: 533 missing values generated
+      edat16: 2921 missing values generated
+      hidg64: 3663 missing values generated
+    z_edeqyr: 2234 missing values generated
+  z_rh001rec: 252 missing values generated
+  z_rh003rec: 154 missing values generated
+  z_rh005rec: 228 missing values generated
+  z_rh007rec: 122 missing values generated
+  z_rh009rec: 132 missing values generated
+  z_ha103rea: 1400 missing values generated
+. 
 . recode z_sexrsp (2 = 0)
 (z_sexrsp: 4692 changes made)
 . rename z_sexrsp male
@@ -184,10 +215,11 @@ Duplicates in terms of subject_id
 . rename z_brdxdy yob
 . replace yob = 1900+yob
 variable yob was byte now int
-(9,012 real changes made)
+(9,012 real changes made, 27 to missing)
 . replace yob = .w if yob<1900
-(27 real changes made, 27 to missing)
+(0 real changes made)
 . 
+. rename z_edeqyr eduyears
 . 
 . //Personality
 . rename z_rh001rec extra
@@ -198,15 +230,15 @@ variable yob was byte now int
 . 
 . //IQ
 . rename gwiiq_bm iq
-.         
-. * Reverse Raw PGSs beacuse of LDpred
-. foreach var of varlist *PGS{
-  2.         replace `var' = `var'*-1
-  3.         }
-(9,012 real changes made)
-(9,012 real changes made)
-(9,012 real changes made)
-. *
+. 
+. //attractiveness
+. rename z_ha103rea attractive
+. 
+. /* Reverse Raw PGSs beacuse of LDpred
+> foreach var of varlist *PGS{
+>         replace `var' = `var'*-1
+>         }
+> */
 . 
 . //Standardize
 . foreach var of varlist *PGS{
@@ -218,12 +250,6 @@ variable yob was byte now int
 (9,012 real changes made)
 (9,012 real changes made)
 . 
-. mvdecode iq extra openn neuro consc agree, mv(-3 = .r)
-       extra: 252 missing values generated
-       openn: 154 missing values generated
-       neuro: 228 missing values generated
-       consc: 122 missing values generated
-       agree: 132 missing values generated
 . 
 . save "${DIRDATA}/CleanData/WLS_cognoncogPred.dta", replace
 file /mnt/department/econ/biroli/geighei/data/WLS//CleanData/WLS_cognoncogPred.dta saved
@@ -241,21 +267,69 @@ file /mnt/department/econ/biroli/geighei/data/WLS//CleanData/WLS_cognoncogPred.d
 . gen yob2 = yob^2
 (27 missing values generated)
 . 
-. foreach yvar in iq extra openn neuro consc agree{
-  2.         sum `yvar'
-  3.         des `yvar'
+. foreach yvar in eduyears iq extra openn neuro consc agree attractive{
+  2.         des `yvar'
+  3.         sum `yvar'
   4.         reg `yvar' COG_PGS NONCOG_PGS yob yob2 male ev1-ev20, cluster(familypriv)
   5. }
 
+              storage   display    value
+variable name   type    format     label      variable label
+----------------------------------------------------------------------------------------
+eduyears        byte    %8.0g      EDEQYR   * R3 equivalent years of regular education
+
     Variable |        Obs        Mean    Std. Dev.       Min        Max
 -------------+---------------------------------------------------------
-          iq |      5,732    102.1359    14.72436         61        145
+    eduyears |      6,778    13.52862      2.2527          6         20
+
+Linear regression                               Number of obs     =      6,778
+                                                F(24, 6054)       =          .
+                                                Prob > F          =          .
+                                                R-squared         =     0.1080
+                                                Root MSE          =     2.1315
+
+                         (Std. Err. adjusted for 6,055 clusters in familypriv)
+------------------------------------------------------------------------------
+             |               Robust
+    eduyears |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+     COG_PGS |    .432594   .0285599    15.15   0.000     .3766065    .4885815
+  NONCOG_PGS |   .3977078   .0287978    13.81   0.000     .3412539    .4541618
+         yob |   9.108736   4.913055     1.85   0.064    -.5226006    18.74007
+        yob2 |  -.0023418   .0012652    -1.85   0.064    -.0048221    .0001385
+        male |    .868588   .0534918    16.24   0.000     .7637251     .973451
+         ev1 |   8.130791   2.069956     3.93   0.000      4.07294    12.18864
+         ev2 |  -12.52178   2.135005    -5.86   0.000    -16.70715   -8.336413
+         ev3 |  -3.843035   2.228905    -1.72   0.085    -8.212481    .5264113
+         ev4 |   .3645743   1.495226     0.24   0.807    -2.566601    3.295749
+         ev5 |   6.801688   2.282963     2.98   0.003     2.326269    11.27711
+         ev6 |   17.72138   2.300478     7.70   0.000     13.21163    22.23114
+         ev7 |  -3.240155   2.184395    -1.48   0.138    -7.522347    1.042036
+         ev8 |   4.097943   2.186091     1.87   0.061    -.1875737     8.38346
+         ev9 |   3.984546   2.193303     1.82   0.069    -.3151085      8.2842
+        ev10 |   2.090087   2.192963     0.95   0.341      -2.2089    6.389075
+        ev11 |  -1.959005   2.247441    -0.87   0.383    -6.364789    2.446779
+        ev12 |  -2.274476   2.255149    -1.01   0.313     -6.69537    2.146418
+        ev13 |  -1.623726    2.28428    -0.71   0.477    -6.101728    2.854276
+        ev14 |   3.888509   2.250859     1.73   0.084    -.5239761    8.300993
+        ev15 |  -1.908065   2.257132    -0.85   0.398    -6.332847    2.516717
+        ev16 |   .1736372   2.206271     0.08   0.937    -4.151438    4.498713
+        ev17 |   3.553314    2.25202     1.58   0.115    -.8614474    7.968075
+        ev18 |  -2.029521   2.224416    -0.91   0.362    -6.390168    2.331126
+        ev19 |  -.0117747   2.246176    -0.01   0.996    -4.415079    4.391529
+        ev20 |   .3754879   2.243306     0.17   0.867    -4.022191    4.773166
+       _cons |  -8844.282   4769.495    -1.85   0.064    -18194.19    505.6266
+------------------------------------------------------------------------------
 
               storage   display    value
 variable name   type    format     label      variable label
 ----------------------------------------------------------------------------------------
 iq              int     %8.0g               * RA bst msure iq scre mppd frm raw
                                                 hnmn-nlsn
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+          iq |      5,732    102.1359    14.72436         61        145
 
 Linear regression                               Number of obs     =      5,705
                                                 F(23, 5693)       =          .
@@ -268,8 +342,8 @@ Linear regression                               Number of obs     =      5,705
              |               Robust
           iq |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
 -------------+----------------------------------------------------------------
-     COG_PGS |  -4.497973   .1961847   -22.93   0.000    -4.882569   -4.113376
-  NONCOG_PGS |  -1.912432   .2009058    -9.52   0.000    -2.306284    -1.51858
+     COG_PGS |   4.497973   .1961847    22.93   0.000     4.113376    4.882569
+  NONCOG_PGS |   1.912432   .2009058     9.52   0.000      1.51858    2.306284
          yob |   -1314.55   974.2616    -1.35   0.177    -3224.474    595.3739
         yob2 |   .3405294   .2519478     1.35   0.177    -.1533844    .8344431
         male |   .7061551   .3659533     1.93   0.054    -.0112528    1.423563
@@ -296,15 +370,15 @@ Linear regression                               Number of obs     =      5,705
        _cons |    1268719   943930.8     1.34   0.179    -581744.4     3119183
 ------------------------------------------------------------------------------
 
-    Variable |        Obs        Mean    Std. Dev.       Min        Max
--------------+---------------------------------------------------------
-       extra |      8,040    8.506965    2.627081          2         12
-
               storage   display    value
 variable name   type    format     label      variable label
 ----------------------------------------------------------------------------------------
 extra           byte    %8.0g      QQJUSTMISSING
                                             * R4 total score for extraversion
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+       extra |      8,040    8.506965    2.627081          2         12
 
 Linear regression                               Number of obs     =      8,040
                                                 F(25, 6257)       =       6.76
@@ -317,8 +391,8 @@ Linear regression                               Number of obs     =      8,040
              |               Robust
        extra |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
 -------------+----------------------------------------------------------------
-     COG_PGS |    .069372   .0318526     2.18   0.029     .0069301     .131814
-  NONCOG_PGS |   .0334463    .032214     1.04   0.299    -.0297043    .0965969
+     COG_PGS |   -.069372   .0318526    -2.18   0.029     -.131814   -.0069301
+  NONCOG_PGS |  -.0334463    .032214    -1.04   0.299    -.0965969    .0297043
          yob |   2.629319   2.603362     1.01   0.313    -2.474164    7.732801
         yob2 |  -.0006742   .0006704    -1.01   0.315    -.0019885      .00064
         male |  -.5467059   .0585145    -9.34   0.000    -.6614143   -.4319975
@@ -345,15 +419,15 @@ Linear regression                               Number of obs     =      8,040
        _cons |  -2554.486   2527.383    -1.01   0.312    -7509.024    2400.053
 ------------------------------------------------------------------------------
 
-    Variable |        Obs        Mean    Std. Dev.       Min        Max
--------------+---------------------------------------------------------
-       openn |      8,138    9.317277    2.460772          2         12
-
               storage   display    value
 variable name   type    format     label      variable label
 ----------------------------------------------------------------------------------------
 openn           byte    %8.0g      QQJUSTMISSING
                                             * R4 total score for openness
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+       openn |      8,138    9.317277    2.460772          2         12
 
 Linear regression                               Number of obs     =      8,138
                                                 F(24, 6305)       =          .
@@ -366,8 +440,8 @@ Linear regression                               Number of obs     =      8,138
              |               Robust
        openn |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
 -------------+----------------------------------------------------------------
-     COG_PGS |  -.1724345   .0291231    -5.92   0.000    -.2295256   -.1153434
-  NONCOG_PGS |   -.177156   .0295157    -6.00   0.000    -.2350169   -.1192952
+     COG_PGS |   .1724345   .0291231     5.92   0.000     .1153434    .2295256
+  NONCOG_PGS |    .177156   .0295157     6.00   0.000     .1192952    .2350169
          yob |   4.952159   2.352777     2.10   0.035     .3399162    9.564402
         yob2 |  -.0012656   .0006056    -2.09   0.037    -.0024527   -.0000784
         male |   .8285578   .0530171    15.63   0.000     .7246264    .9324893
@@ -394,15 +468,15 @@ Linear regression                               Number of obs     =      8,138
        _cons |   -4835.18   2285.131    -2.12   0.034    -9314.814   -355.5459
 ------------------------------------------------------------------------------
 
-    Variable |        Obs        Mean    Std. Dev.       Min        Max
--------------+---------------------------------------------------------
-       neuro |      8,064    6.283978    2.933673          2         12
-
               storage   display    value
 variable name   type    format     label      variable label
 ----------------------------------------------------------------------------------------
 neuro           byte    %8.0g      QQJUSTMISSING
                                             * R4 total score for neuroticism
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+       neuro |      8,064    6.283978    2.933673          2         12
 
 Linear regression                               Number of obs     =      8,064
                                                 F(24, 6267)       =          .
@@ -415,9 +489,9 @@ Linear regression                               Number of obs     =      8,064
              |               Robust
        neuro |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
 -------------+----------------------------------------------------------------
-     COG_PGS |   .0621372   .0353295     1.76   0.079    -.0071207     .131395
-  NONCOG_PGS |   .1079053   .0357519     3.02   0.003     .0378194    .1779912
-         yob |     .29445   2.854436     0.10   0.918    -5.301222    5.890122
+     COG_PGS |  -.0621372   .0353295    -1.76   0.079     -.131395    .0071207
+  NONCOG_PGS |  -.1079053   .0357519    -3.02   0.003    -.1779912   -.0378194
+         yob |     .29445   2.854446     0.10   0.918    -5.301243    5.890143
         yob2 |   -.000072   .0007351    -0.10   0.922     -.001513    .0013691
         male |  -.7461762   .0647549   -11.52   0.000    -.8731179   -.6192344
          ev1 |  -3.206266   2.879427    -1.11   0.266    -8.850928    2.438397
@@ -440,18 +514,18 @@ Linear regression                               Number of obs     =      8,064
         ev18 |   1.481887   2.919369     0.51   0.612    -4.241076     7.20485
         ev19 |  -1.276754   2.911782    -0.44   0.661    -6.984843    4.431336
         ev20 |  -2.350096    2.93098    -0.80   0.423    -8.095822     3.39563
-       _cons |   -293.714   2770.946    -0.11   0.916    -5725.716    5138.289
+       _cons |   -293.714   2770.956    -0.11   0.916    -5725.737     5138.31
 ------------------------------------------------------------------------------
-
-    Variable |        Obs        Mean    Std. Dev.       Min        Max
--------------+---------------------------------------------------------
-       consc |      8,170    9.511995    2.308906          2         12
 
               storage   display    value
 variable name   type    format     label      variable label
 ----------------------------------------------------------------------------------------
 consc           byte    %8.0g      QQJUSTMISSING
                                             * R4 total score for conscientiousness
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+       consc |      8,170    9.511995    2.308906          2         12
 
 Linear regression                               Number of obs     =      8,170
                                                 F(24, 6316)       =          .
@@ -464,8 +538,8 @@ Linear regression                               Number of obs     =      8,170
              |               Robust
        consc |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
 -------------+----------------------------------------------------------------
-     COG_PGS |   .0704678   .0276816     2.55   0.011     .0162025    .1247331
-  NONCOG_PGS |   .0927627   .0274969     3.37   0.001     .0388594    .1466661
+     COG_PGS |  -.0704678   .0276816    -2.55   0.011    -.1247331   -.0162025
+  NONCOG_PGS |  -.0927627   .0274969    -3.37   0.001    -.1466661   -.0388594
          yob |  -1.130677   2.184448    -0.52   0.605    -5.412937    3.151583
         yob2 |   .0002869   .0005627     0.51   0.610    -.0008161    .0013899
         male |  -.1282078   .0510441    -2.51   0.012    -.2282714   -.0281441
@@ -492,15 +566,15 @@ Linear regression                               Number of obs     =      8,170
        _cons |   1123.303   2120.266     0.53   0.596    -3033.139    5279.744
 ------------------------------------------------------------------------------
 
-    Variable |        Obs        Mean    Std. Dev.       Min        Max
--------------+---------------------------------------------------------
-       agree |      8,160    9.890686    2.042642          2         12
-
               storage   display    value
 variable name   type    format     label      variable label
 ----------------------------------------------------------------------------------------
 agree           byte    %8.0g      QQJUSTMISSING
                                             * R4 total score for agreeableness
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+       agree |      8,160    9.890686    2.042642          2         12
 
 Linear regression                               Number of obs     =      8,160
                                                 F(24, 6305)       =          .
@@ -513,8 +587,8 @@ Linear regression                               Number of obs     =      8,160
              |               Robust
        agree |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
 -------------+----------------------------------------------------------------
-     COG_PGS |   .0435831   .0246581     1.77   0.077    -.0047551    .0919214
-  NONCOG_PGS |  -.0202902    .024709    -0.82   0.412    -.0687283    .0281479
+     COG_PGS |  -.0435831   .0246581    -1.77   0.077    -.0919214    .0047551
+  NONCOG_PGS |   .0202902    .024709     0.82   0.412    -.0281479    .0687283
          yob |  -.3513132   1.956936    -0.18   0.858    -4.187574    3.484948
         yob2 |   .0000839   .0005043     0.17   0.868    -.0009047    .0010726
         male |   -.577872   .0451649   -12.79   0.000    -.6664105   -.4893334
@@ -540,6 +614,55 @@ Linear regression                               Number of obs     =      8,160
         ev20 |  -2.451559   1.979957    -1.24   0.216    -6.332949     1.42983
        _cons |   375.7543   1898.337     0.20   0.843    -3345.633    4097.141
 ------------------------------------------------------------------------------
+
+              storage   display    value
+variable name   type    format     label      variable label
+----------------------------------------------------------------------------------------
+attractive      byte    %8.0g      HA103REA * R6 Interviewer's assesment of
+                                                participant's attractiveness
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+  attractive |      6,685    7.217651    1.827557          0         10
+
+Linear regression                               Number of obs     =      6,685
+                                                F(24, 5405)       =          .
+                                                Prob > F          =          .
+                                                R-squared         =     0.0049
+                                                Root MSE          =     1.8265
+
+                         (Std. Err. adjusted for 5,406 clusters in familypriv)
+------------------------------------------------------------------------------
+             |               Robust
+  attractive |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+     COG_PGS |   .0019707    .024956     0.08   0.937    -.0469531    .0508944
+  NONCOG_PGS |   .0182832   .0242401     0.75   0.451    -.0292371    .0658035
+         yob |  -1.113766   1.918289    -0.58   0.562    -4.874385    2.646853
+        yob2 |   .0002892   .0004941     0.59   0.558    -.0006794    .0012577
+        male |  -.1611746    .045521    -3.54   0.000     -.250414   -.0719351
+         ev1 |  -1.311421   1.632945    -0.80   0.422    -4.512651    1.889809
+         ev2 |   .9800304   1.947924     0.50   0.615    -2.838687    4.798747
+         ev3 |   .8390558     1.8557     0.45   0.651    -2.798863    4.476975
+         ev4 |   .6792311   1.935209     0.35   0.726    -3.114559    4.473021
+         ev5 |   3.856856   1.974771     1.95   0.051    -.0144909    7.728204
+         ev6 |   .7976018   1.983442     0.40   0.688    -3.090744    4.685948
+         ev7 |  -2.909049   1.985706    -1.46   0.143    -6.801833    .9837352
+         ev8 |  -1.465463    2.00725    -0.73   0.465    -5.400481    2.469556
+         ev9 |   .9909676   2.028533     0.49   0.625    -2.985775     4.96771
+        ev10 |  -1.167468    2.09738    -0.56   0.578    -5.279178    2.944242
+        ev11 |  -1.950358   2.003604    -0.97   0.330     -5.87823    1.977514
+        ev12 |  -4.012965   2.069376    -1.94   0.053    -8.069777    .0438469
+        ev13 |  -.6060913   2.050327    -0.30   0.768    -4.625558    3.413375
+        ev14 |   1.736577   2.086145     0.83   0.405    -2.353109    5.826263
+        ev15 |  -.5008159   2.091986    -0.24   0.811    -4.601951    3.600319
+        ev16 |   .6612098   2.074124     0.32   0.750    -3.404908    4.727328
+        ev17 |  -.0729894   2.095922    -0.03   0.972    -4.181841    4.035863
+        ev18 |  -1.928691   2.025935    -0.95   0.341     -5.90034    2.042958
+        ev19 |   1.370457    2.06867     0.66   0.508    -2.684969    5.425884
+        ev20 |   2.217731   2.090612     1.06   0.289    -1.880711    6.316173
+       _cons |    1079.73   1861.983     0.58   0.562    -2570.508    4729.967
+------------------------------------------------------------------------------
 . 
 . } // end RUNREG
 
@@ -548,5 +671,5 @@ Linear regression                               Number of obs     =      8,160
       name:  <unnamed>
        log:  /mnt/data/Research/cogNoncogGSEM/analysis/WLS/output/cogNoncog_WLS.log
   log type:  text
- closed on:  27 Feb 2019, 19:17:55
+ closed on:  27 Feb 2019, 19:35:17
 ----------------------------------------------------------------------------------------
