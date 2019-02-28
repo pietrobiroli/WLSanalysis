@@ -159,12 +159,75 @@ use "${DIRDATA}/CleanData/WLS_cognoncogPred.dta", clear
 *****************  MULTIVARIATE ANALYSIS - WLS *****************************
 ****************************************************************************
 gen yob2 = yob^2
+// standardize IQ
+egen temp = std(iq)
+replace iq = temp
+drop temp
 
 foreach yvar in eduyears iq extra openn neuro consc agree attractive{
 	des `yvar'
 	sum `yvar'
+	
+	reg `yvar' COG_PGS            yob yob2 male ev1-ev20, cluster(familypriv)
+	estimate store cog_`yvar'
+	
+	reg `yvar'         NONCOG_PGS yob yob2 male ev1-ev20, cluster(familypriv)
+	estimate store noncog_`yvar'
+
 	reg `yvar' COG_PGS NONCOG_PGS yob yob2 male ev1-ev20, cluster(familypriv)
-}
+	estimate store both_`yvar'
+} //end forloop yvar
+
+*--------------Coefficient plot output
+*-- Cognitive PGS
+coefplot  (both_eduyears , aseq(Years of edu)) ///
+          (both_iq , aseq(IQ)) ///
+          (both_extra, aseq(Extraversion)) ///
+          (both_openn, aseq(Openness)) ///
+          (both_neuro, aseq(Neuroticism)) ///
+          (both_consc, aseq(Conscientiousness)) ///
+          (both_agree, aseq(Agreeableness)) ///
+          (both_attractive, aseq(Attractiveness)) ///
+   , keep(COG_PGS) ///
+   msymbol(D) xline(0) byopts(xrescale) levels(95 90) ciopts(recast(. rcap)) legend(order(1 "95% c.i." 2 "90% c.i." )) graphregion(color(white)) bgcolor(white) ///ciopts(lwidth(2 ..) lcolor(*.2 *.4 ; )) xlabel(-.12(.04).12) 
+   aseq swapnames 
+
+graph save   coefplot_cog, replace
+graph export coefplot_cog.png, replace
+
+*-- Noncognitive PGS
+coefplot  (both_eduyears , aseq(Years of edu)) ///
+          (both_iq , aseq(IQ)) ///
+          (both_extra, aseq(Extraversion)) ///
+          (both_openn, aseq(Openness)) ///
+          (both_neuro, aseq(Neuroticism)) ///
+          (both_consc, aseq(Conscientiousness)) ///
+          (both_agree, aseq(Agreeableness)) ///
+          (both_attractive, aseq(Attractiveness)) ///
+   , keep(NONCOG_PGS) ///
+   msymbol(D) xline(0) byopts(xrescale) levels(95 90) ciopts(recast(. rcap)) legend(order(1 "95% c.i." 2 "90% c.i." )) graphregion(color(white)) bgcolor(white) ///ciopts(lwidth(2 ..) lcolor(*.2 *.4 ; )) xlabel(-.12(.04).12) 
+   aseq swapnames 
+
+graph save   coefplot_noncog, replace
+graph export coefplot_noncog.png, replace
+
+
+*-- Both PGS
+coefplot  (both_eduyears , aseq(Years of edu)) ///
+          (both_iq , aseq(IQ)) ///
+          (both_extra, aseq(Extraversion)) ///
+          (both_openn, aseq(Openness)) ///
+          (both_neuro, aseq(Neuroticism)) ///
+          (both_consc, aseq(Conscientiousness)) ///
+          (both_agree, aseq(Agreeableness)) ///
+          (both_attractive, aseq(Attractiveness)) ///
+   , keep(COG_PGS NONCOG_PGS) ///
+   msymbol(D) xline(0) byopts(xrescale) levels(95 90) ciopts(recast(. rcap)) legend(order(1 "95% c.i." 2 "90% c.i." )) graphregion(color(white)) bgcolor(white) ///ciopts(lwidth(2 ..) lcolor(*.2 *.4 ; )) xlabel(-.12(.04).12) 
+   aseq swapnames 
+
+graph save   coefplot_both, replace
+graph export coefplot_both.png, replace
+
 
 } // end RUNREG
 
