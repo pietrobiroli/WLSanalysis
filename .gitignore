@@ -1,0 +1,66 @@
+#Do not keep track of the files that track changes
+*~
+# Mac on Windows files
+*.DS_Store*
+*.sync.*
+
+# Output files (also latex)
+*.out
+
+#Do not keep track of STATA, datasets, log files
+#*.log
+*.smcl
+*.dta
+*.csv
+*.gph
+
+#Do not keep track of the changes in the pdf files (they are binary files)
+*.pdf
+
+##Do not keep track of figures or graphs
+#*.png
+#*.jpg
+#*.eps
+
+#Do not keep track of LaTex files
+*.tex
+
+#Do not keep track of the changes in microsoft word or excel files (they are binary files)
+*.xls
+*.xlsx
+*.doc
+*.docx
+
+#Ignore zipped files
+*.zip
+*.tar
+*.gz
+
+#Ignore latex-project files
+*.aux
+*.glo
+*.idx
+#*.log
+*.toc
+*.ist
+*.acn
+*.acr
+*.alg
+*.bbl
+*.blg
+*.dvi
+*.glg
+*.gls
+*.ilg
+*.ind
+*.lof
+*.lot
+*.maf
+*.mtc
+*.mtc1
+*.synctex.gz
+*.nav
+*.snm
+*.tdo
+*.bak
+
