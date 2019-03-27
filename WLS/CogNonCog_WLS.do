@@ -28,7 +28,7 @@ cd ${DIRCODE}/output
 
 log using cogNoncog_WLS.log, replace
 
-global CREATEDATA = 0
+global CREATEDATA = 1
 global RUNREG     = 1
 
 
@@ -97,7 +97,10 @@ save "${DIRPGS}/cogNoncogPGS.dta", replace
 
 *------------ Merge with the phenotypic data
 use "${DIRDATA}/RawData/WLS_Survey_PhenotypicLong-formData-13_06/wls_plg_13_06.dta", clear
-keep idpriv-rlifewv srbmi-rbmc6  *iq*  z_rh00* z_edeqyr edat16 hidg64 z_ha103rea
+keep idpriv-rlifewv srbmi-rbmc6  *iq*  z_rh00* z_edeqyr edat16 hidg64 z_ha103rea  ///
+     z_jh001rec-z_jg361rer ///personality
+     z_jzg01rer hsr* ///
+      
 
 destring subject_id , replace
 drop if missing(subject_id)==1
@@ -108,8 +111,8 @@ drop _merge
 
 
 *------------ Clean and rename some vars
-mvdecode sibcount-rlifewv z_spwiiq_f-z_rh009rec z_ha103rea,  mv(-1 = .a \ -2 = .b \ -3 = .r \ -4 = .d \ -5 = .e )
-
+mvdecode sibcount-rlifewv z_spwiiq_f-z_rh009rec z_ha103rea z_jh001rec-z_jg361rer,  mv(-1 = .a \ -2 = .b \ -3 = .r \ -4 = .d \ -5 = .e \ -27 = .f \ -29 = .g)
+ 
 recode z_sexrsp (2 = 0)
 rename z_sexrsp male
 tab male
@@ -121,17 +124,39 @@ replace yob = .w if yob<1900
 rename z_edeqyr eduyears
 
 //Personality
+rename z_jh001rei extra
+rename z_jh032rei openn
+rename z_jh025rei neuro
+rename z_jh017rei consc
+rename z_jh009rei agree
+
+
+rename z_jn001rei autonomy
+rename z_jn010rei envmastery
+rename z_jn019rei persgrowth
+rename z_jn028rei posrel
+rename z_jn037rei purposelife
+rename z_jn046rei selfaccept
+
+/* phone questionnaire
 rename z_rh001rec extra
 rename z_rh003rec openn
 rename z_rh005rec neuro
 rename z_rh007rec consc
 rename z_rh009rec agree
+*/
 
 //IQ
 rename gwiiq_bm iq
 
 //attractiveness
 rename z_ha103rea attractive
+
+
+rename z_jzg01rer hs_classrank
+rename hsrankq    gpa_hsrank
+rename hsrscorq   gpa_hsranknorm
+
 
 /* Reverse Raw PGSs beacuse of LDpred
 foreach var of varlist *PGS{
@@ -165,6 +190,7 @@ replace iq = temp
 drop temp
 
 foreach yvar in eduyears iq extra openn neuro consc agree attractive{
+	local yvar z_mh017rei
 	des `yvar'
 	sum `yvar'
 	

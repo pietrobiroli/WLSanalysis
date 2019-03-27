@@ -1,0 +1,79 @@
+---
+output: html_document
+params:
+  plink: ""
+  data: ""
+  summ_stats: ""
+  pheno: ""
+  range_file: ""
+  out_score: ""
+  final_out: ""
+---
+
+
+This notebook intended to explain the construction of PolyGenic score for HRS data using all the SNPs (bestGuess).
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+Load libraries
+```{r}
+library(tidyverse)
+library(data.table)
+library(optparse)
+```
+
+
+
+```{bash, echo=FALSE}
+echo "Options:"
+echo "-plink: Plink Path"
+echo "-data: GWAS data path"
+echo "-summ_stats: path to summary stats"
+echo "-pheno: the name of the phenotype"
+echo "-range_file: The range of the p-value threshold"
+echo "-out_score output: file conainting the score resutls"
+echo "-final_out Final: output with all results combined"
+```
+
+Define the params for the bash environment
+
+```{r, echo=FALSE}
+Sys.setenv(plink=params$plink)
+Sys.setenv(data=params$data)
+Sys.setenv(summ_stats=params$summ_stats)
+Sys.setenv(pheno=params$pheno)
+Sys.setenv(range_file=params$range_file)
+Sys.setenv(out_score=params$out_score)
+Sys.setenv(final_out=params$final_out)
+```
+
+
+PGS score by applying a 1 p-value threshold:
+
+```{bash}
+eval sudo $plink --bfile $data  --score  $summ_stats 1 2 5 header center sum --q-score-range $range_file $summ_stats 1 4 --out $out_score
+```
+
+
+Obtain the output of the pgs using only p-value threshold and combine them in one file.
+
+```{r}
+score_path <- dirname(params$out_score)
+score_file <- list.files(score_path, pattern = "\\.all.profile$")
+## read the score file and keep the first two columns and the score column (last column)
+all_data <- lapply(score_file, function(x) fread(paste(score_path, x, sep="/")))  
+all_data <- data.frame(all_data)
+all_data <- all_data[,c(1,2,6)]
+
+all_data$SCORESUM <- scale(all_data$SCORESUM, center=TRUE)
+colnames(all_data) <- c("FID", "IID", paste0(params$pheno, "_all_pgs"))
+
+write.table(all_data,
+            params$final_out,
+            quote = F,
+            row.names = F)
+
+```
