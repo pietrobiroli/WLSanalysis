@@ -40,6 +40,10 @@ log using cogNoncog_WLS.log, replace
 global CREATEDATA = 1
 global RUNREG     = 1
 
+// Set phenotypes
+global PERSONALITY extra openn neuro consc agree autonomy envmastery persgrowth posrel purposelife selfaccept flexgoals tenaciousgoals 
+global COG         iq WAIS8_grad WAIS10_sib z_gi206re z_gi210rec z_gi306re z_gi310rec  z_gi101re z_gi106re  z_gi401re z_gi402re z_gi413re z_gi457re  z_ai101re  z_ai401re z_ai402re z_ai413re z_ai457re  z_gi501re z_gi502re z_gi503re  z_hi206re z_hi210rec z_hi301re z_hi306re z_hi310rec  z_hi101re  z_hi501re z_hi502re z_hi502rea z_hi503re z_hi503rea  z_hi615re z_hinsraschscore z_hisimplescore  z_hi413re z_hi457re 
+global PHENO       eduyears attractive gpa_hsrank hs_classrank tchevl ${COG} ${PERSONALITY} 
 
 
 if $CREATEDATA==1{
@@ -71,9 +75,10 @@ drop _merge
 duplicates report fid iid
 destring fid, force gen(subject_id)
 destring iid, force gen(iid_n)
-
+/*
 rename fid subject_id   // fid already numeric
 rename iid iid_n        // iid already numeric
+*/
 
 /*  fid and iid are the same, expect for those that a NA for one of them. I drop them and end up with the sampe of 9012 individuals that is suggested by the WLS
 
@@ -111,9 +116,13 @@ save "${DIRPGS}/cogNoncogPGS.dta", replace
 
 *------------ Merge with the phenotypic data
 use "${DIRDATA}/RawData/WLS_Survey_PhenotypicLong-formData-13_06/wls_plg_13_06.dta", clear
-keep idpriv-rlifewv srbmi-rbmc6  *iq*  z_rh00* z_edeqyr edat16 hidg64 z_ha103rea  ///
-     z_jh001rec-z_jg361rer ///personality
-     z_jzg01rer hsr* ri001re si001re z_ie008re z_hi101re
+keep idpriv-rlifewv z_ie008re srbmi-rbmc6  *iq*  z_edeqyr edat16 hidg64 z_ha103rea  /// demog
+     z_rh* z_rn* z_mn0* z_mh0* z_jh001rec-z_jg361rer ///personality
+     z_jzg01rer hsr* tchevl /// classrank and teacher likes me
+     ri001re si001re z_hi101re z_gi206re z_gi210rec z_gi306re z_gi310rec  z_gi101re z_gi106re  z_gi401re z_gi402re z_gi413re z_gi457re /// cog
+     z_ai101re  z_ai401re z_ai402re z_ai413re z_ai457re  z_gi501re z_gi502re z_gi503re  z_hi206re z_hi210rec /// cog
+     z_hi301re z_hi306re z_hi310rec  z_hi101re  z_hi501re z_hi502re z_hi502rea z_hi503re z_hi503rea  /// cog
+     z_hi615re z_hinsraschscore z_hisimplescore  z_hi413re z_hi457re 
 
 destring subject_id , replace
 drop if missing(subject_id)==1
@@ -123,7 +132,8 @@ merge 1:1 subject_id using "${DIRPGS}/cogNoncogPGS.dta"
 drop _merge
 
 *------------ Clean and rename some vars
-mvdecode sibcount-rlifewv z_spwiiq_f-z_rh009rec z_ha103rea z_jh001rec-z_jg361rer z_jh001rei-z_jh009rei z_ie008re z_jzg01rer z_hi101re,  mv(-1 = .a \ -2 = .b \ -3 = .r \ -4 = .d \ -5 = .e \ -27 = .f \ -29 = .g)
+order srbmi, last
+mvdecode idpriv-scanid,  mv(-1 = .a \ -2 = .b \ -3 = .c \ -4 = .d \ -5 = .e \ -27 = .f \ -29 = .g \ -30 = .h \ -15 = .i)
 
 //Gender
 recode z_sexrsp (2 = 0)
@@ -145,19 +155,21 @@ rename z_edeqyr eduyears
 
 //Personality
 //Note: this variables have more observations than the "phone questionnaire"
-rename z_rh001rec extra
-rename z_rh003rec openn
-rename z_rh005rec neuro
-rename z_rh007rec consc
-rename z_rh009rec agree
-*/
+rename z_mh001rei extra
+rename z_mh009rei agree
+rename z_mh017rei consc
+rename z_mh025rei neuro
+rename z_mh032rei openn
+*
 
-rename z_jn001rei autonomy
-rename z_jn010rei envmastery
-rename z_jn019rei persgrowth
-rename z_jn028rei posrel
-rename z_jn037rei purposelife
-rename z_jn046rei selfaccept
+rename z_mn001rei autonomy
+rename z_mn010rei envmastery
+rename z_mn019rei persgrowth
+rename z_mn028rei posrel
+rename z_mn037rei purposelife
+rename z_mn046rei selfaccept
+rename z_mn055rei flexgoals
+rename z_mn062rei tenaciousgoals
 
 
 /* phone questionnaire
@@ -181,11 +193,9 @@ rename hsrankq    gpa_hsrank        // High school grades percentile rank
 rename hsrscorq   gpa_hsranknorm    // High school grades percentile rank-normalized
 
 //Cognition
-rename z_hi101re  cog_sim           // WAIS questions in the Cognition-Similarities Module
-replace cog_sim = . if cog_sim == -30
 
-rename ri001re    cog_grad          // Total cognition score GRAD (8-items asked)
-rename si001re    cog_sib           // Total cognition score SIB (10-items asked) 
+rename ri001re    WAIS8_grad          // Total cognition score GRAD (8-items asked)
+rename si001re    WAIS10_sib           // Total cognition score SIB (10-items asked) 
 
 
 /* Cognition variables
@@ -242,10 +252,6 @@ gen yob2 = yob^2
 egen temp = std(iq)
 replace iq = temp
 drop temp
-
-// Set phenotypes
-global PHENO "eduyears iq extra openn neuro consc agree attractive gpa_hsrank cog_sim"
-
 
 *--------------PGS Correlations (as in CogNonCog_181121.do)
 foreach pgs in NONCOG_PGS COG_PGS {
@@ -350,7 +356,7 @@ putexcel a1 = matrix(mvFX), names
 
 
 
-*--------------Regressions
+*--------------Regressions (old style)
 foreach yvar in eduyears iq extra openn neuro consc agree attractive {
 	des `yvar'
 	sum `yvar'
