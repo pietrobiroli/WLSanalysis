@@ -1,18 +1,9 @@
-<<<<<<< HEAD
--------------------------------------------------------------------------------
-      name:  <unnamed>
-       log:  /mnt/data/Research/cogNoncogGSEM/analysis/WLS/output/cogNoncog_WLS
-> .log
-  log type:  text
- opened on:  20 Mar 2019, 18:35:57
-=======
 -------------------------------------------------------------------------------------
       name:  <unnamed>
        log:  /Users/michellerosenberger/Development/GEIGHEI/WLSanalysis/WLS/output/co
 > gNoncog_WLS.log
   log type:  text
- opened on:  28 Mar 2019, 10:08:58
->>>>>>> Change output format
+ opened on:  28 Mar 2019, 10:21:40
 
 . 
 . *------------ Global variables
@@ -24,21 +15,12 @@
 . 
 . 
 . if $CREATEDATA==1{
-. *****************************************************************************
-> ***
-. *******************************MERGE THE DATA *******************************
-> ***
-. *****************************************************************************
-> ***
+. ********************************************************************************
+. *******************************MERGE THE DATA **********************************
+. ********************************************************************************
 . *------------ Import the PGS created in plink
-<<<<<<< HEAD
-. import delimited "${DIRPGS}/COG_PGS_WLS.profile", clear delimiter(space, coll
-> apse)
-(7 vars, 9,109 obs)
-=======
 . import delimited "${DIRPGS}/COG_PGS_WLS.profile", clear delimiter(space, collapse)
 (7 vars, 6,539 obs)
->>>>>>> Change output format
 . drop v1 pheno cnt cnt2 
 . rename score COG_PGS
 . compress
@@ -47,15 +29,9 @@
 file /Volumes/g_econ_department$/econ/biroli/geighei/data/WLS/CleanData/PGS/cogNoncog
 > PGS.dta saved
 . 
-<<<<<<< HEAD
-. import delimited "${DIRPGS}/NONCOG_PGS_WLS.profile", clear delimiter(space, c
-> ollapse)
-(7 vars, 9,109 obs)
-=======
 . import delimited "${DIRPGS}/NONCOG_PGS_WLS.profile", clear delimiter(space, collaps
 > e)
 (7 vars, 6,539 obs)
->>>>>>> Change output format
 . drop v1 pheno cnt cnt2 
 . rename score NONCOG_PGS
 . compress
@@ -72,14 +48,8 @@ file /Volumes/g_econ_department$/econ/biroli/geighei/data/WLS/CleanData/PGS/cogN
 file /Volumes/g_econ_department$/econ/biroli/geighei/data/WLS/CleanData/PGS/cogNoncog
 > PGS.dta saved
 . 
-<<<<<<< HEAD
-. import delimited "${DIRPGS}/EA3_PGS_WLS.profile", clear delimiter(space, coll
-> apse)
-(7 vars, 9,109 obs)
-=======
 . import delimited "${DIRPGS}/EA3_PGS_WLS.profile", clear delimiter(space, collapse)
 (7 vars, 6,539 obs)
->>>>>>> Change output format
 . drop v1 pheno cnt cnt2 
 . rename score EA3_PGS
 . compress
@@ -110,17 +80,6 @@ iid already numeric; no generate
 . rename fid subject_id   // fid already numeric
 . rename iid iid_n        // iid already numeric
 . 
-<<<<<<< HEAD
-. /*  fid and iid are the same, expect for those that a NA for one of them. I d
-> rop them and end up with the sampe of 9012 individuals that is suggested by t
-> he WLS
-> 
-> "After the GAC’s standardized QC procedures, including resolution of sample q
-> uality and identity, 
-> genotypes are available on dbGaP for 9,012 unique WLS study participants. 
-> (Note for 15 pairs of monozygotic twins, only one member of each pair is reta
-> ined in the unique set of 9,012 participants.)"
-=======
 . /*  fid and iid are the same, expect for those that a NA for one of them. I drop th
 > em and end up with the sampe of 9012 individuals that is suggested by the WLS
 > 
@@ -129,7 +88,6 @@ iid already numeric; no generate
 > genotypes are available on dbGaP for 9,012 unique WLS study participants. 
 > (Note for 15 pairs of monozygotic twins, only one member of each pair is retained i
 > n the unique set of 9,012 participants.)"
->>>>>>> Change output format
 > 
 > 
 > gen diff = subject_id - iid_n
@@ -147,13 +105,8 @@ file /Volumes/g_econ_department$/econ/biroli/geighei/data/WLS/CleanData/PGS/cogN
 . 
 . 
 . *------------ Merge with the principal components
-<<<<<<< HEAD
-. import delimited "${DIRDATA}/RawData/WLS_Genotypic_Data/AA_Readme/Principal_c
-> omponents.csv", clear delimiter(comma, collapse)
-=======
 . import delimited "${DIRDATA}/RawData/WLS_Genotypic_Data/AA_Readme/Principal_compone
 > nts.csv", clear delimiter(comma, collapse)
->>>>>>> Change output format
 (23 vars, 9,012 obs)
 . merge 1:1 subject_id using "${DIRPGS}/cogNoncogPGS.dta"
 
@@ -172,13 +125,8 @@ file /Volumes/g_econ_department$/econ/biroli/geighei/data/WLS/CleanData/PGS/cogN
 . 
 . 
 . *------------ Merge with the information data
-<<<<<<< HEAD
-. import delimited "${DIRDATA}/RawData/WLS_Genotypic_Data/AA_Readme/Sample_anal
-> ysis.csv", clear delimiter(comma, collapse)
-=======
 . import delimited "${DIRDATA}/RawData/WLS_Genotypic_Data/AA_Readme/Sample_analysis.c
 > sv", clear delimiter(comma, collapse)
->>>>>>> Change output format
 (15 vars, 9,109 obs)
 . destring subject_id, replace force 
 subject_id: contains nonnumeric characters; replaced as long
@@ -200,22 +148,12 @@ file /Volumes/g_econ_department$/econ/biroli/geighei/data/WLS/CleanData/PGS/cogN
 . 
 . 
 . *------------ Merge with the phenotypic data
-<<<<<<< HEAD
-. use "${DIRDATA}/RawData/WLS_Survey_PhenotypicLong-formData-13_06/wls_plg_13_0
-> 6.dta", clear
-. keep idpriv-rlifewv srbmi-rbmc6  *iq*  z_rh00* z_edeqyr edat16 hidg64 z_ha103
-> rea  ///
->      z_jh001rec-z_jg361rer ///personality
->      z_jzg01rer hsr* ///
->       
-=======
 . use "${DIRDATA}/RawData/WLS_Survey_PhenotypicLong-formData-13_06/wls_plg_13_06.dta"
 > , clear
 . keep idpriv-rlifewv srbmi-rbmc6  *iq*  z_rh00* z_edeqyr edat16 hidg64 z_ha103rea  /
 > //
 >      z_jh001rec-z_jg361rer ///personality
 >      z_jzg01rer hsr* ri001re si001re z_ie008re z_hi101re
->>>>>>> Change output format
 . 
 . destring subject_id , replace
 subject_id: all characters numeric; replaced as long
@@ -247,15 +185,9 @@ Duplicates in terms of subject_id
 . drop _merge
 . 
 . *------------ Clean and rename some vars
-<<<<<<< HEAD
-. mvdecode sibcount-rlifewv z_spwiiq_f-z_rh009rec z_ha103rea z_jh001rec-z_jg361
-> rer,  mv(-1 = .a \ -2 = .b \ -3 = .r \ -4 = .d \ -5 = .e \ -27 = .f \ -29 = .
-> g)
-=======
 . mvdecode sibcount-rlifewv z_spwiiq_f-z_rh009rec z_ha103rea z_jh001rec-z_jg361rer z_
 > jh001rei-z_jh009rei z_ie008re z_jzg01rer z_hi101re,  mv(-1 = .a \ -2 = .b \ -3 = .r
 >  \ -4 = .d \ -5 = .e \ -27 = .f \ -29 = .g)
->>>>>>> Change output format
        srel1: 29 missing values generated
        srel2: 186 missing values generated
        srel3: 4 missing values generated
@@ -396,15 +328,11 @@ Duplicates in terms of subject_id
   z_jg307rer: 275 missing values generated
   z_jg360rer: 265 missing values generated
   z_jg361rer: 277 missing values generated
-<<<<<<< HEAD
-.  
-=======
    z_ie008re: 88 missing values generated
   z_jzg01rer: 425 missing values generated
    z_hi101re: 174 missing values generated
 . 
 . //Gender
->>>>>>> Change output format
 . recode z_sexrsp (2 = 0)
 (z_sexrsp: 4692 changes made)
 . rename z_sexrsp male
@@ -442,36 +370,13 @@ variable yob was byte now int
 . rename z_edeqyr eduyears
 . 
 . //Personality
-<<<<<<< HEAD
-. rename z_jh001rei extra
-. rename z_jh032rei openn
-. rename z_jh025rei neuro
-. rename z_jh017rei consc
-. rename z_jh009rei agree
-. 
-. 
-. rename z_jn001rei autonomy
-. rename z_jn010rei envmastery
-. rename z_jn019rei persgrowth
-. rename z_jn028rei posrel
-. rename z_jn037rei purposelife
-. rename z_jn046rei selfaccept
-. 
-. /* phone questionnaire
-> rename z_rh001rec extra
-> rename z_rh003rec openn
-> rename z_rh005rec neuro
-> rename z_rh007rec consc
-> rename z_rh009rec agree
-> */
-=======
 . //Note: this variables have more observations than the "phone questionnaire"
 . rename z_rh001rec extra
 . rename z_rh003rec openn
 . rename z_rh005rec neuro
 . rename z_rh007rec consc
 . rename z_rh009rec agree
->>>>>>> Change output format
+. */
 . 
 . rename z_jn001rei autonomy
 . rename z_jn010rei envmastery
@@ -496,12 +401,6 @@ variable yob was byte now int
 . //Attractiveness
 . rename z_ha103rea attractive
 . 
-<<<<<<< HEAD
-. 
-. rename z_jzg01rer hs_classrank
-. rename hsrankq    gpa_hsrank
-. rename hsrscorq   gpa_hsranknorm
-=======
 . //GPA
 . rename z_jzg01rer hs_classrank
 . rename hsrankq    gpa_hsrank        // High school grades percentile rank
@@ -539,7 +438,6 @@ variable yob was byte now int
 > z_hinsraschscore        R6 NS Rasch Scoring of all answered questions
 > z_hisimplescore R6 Simple Score for McArdle Task
 > */
->>>>>>> Change output format
 . 
 . 
 . /* Reverse Raw PGSs beacuse of LDpred
@@ -563,14 +461,9 @@ variable yob was byte now int
 . 
 . 
 . save "${DIRDATA}/CleanData/WLS_cognoncogPred.dta", replace
-<<<<<<< HEAD
-file /mnt/department/econ/biroli/geighei/data/WLS//CleanData/WLS_cognoncogPred.
-> dta saved
-=======
 file /Volumes/g_econ_department$/econ/biroli/geighei/data/WLS//CleanData/WLS_cognonco
 > gPred.dta saved
 . 
->>>>>>> Change output format
 . } // end CREATEDATA
 
 . 
@@ -587,36 +480,6 @@ file /Volumes/g_econ_department$/econ/biroli/geighei/data/WLS//CleanData/WLS_cog
 (1,217 observations deleted)
 . 
 . gen yob2 = yob^2
-<<<<<<< HEAD
-(27 missing values generated)
-. // standardize IQ
-. egen temp = std(iq)
-(3280 missing values generated)
-. replace iq = temp
-variable iq was int now float
-(5,732 real changes made)
-. drop temp
-. 
-. foreach yvar in eduyears iq extra openn neuro consc agree attractive{
-  2.         local yvar z_mh017rei
-  3.         des `yvar'
-  4.         sum `yvar'
-  5.         
-.         reg `yvar' COG_PGS            yob yob2 male ev1-ev20, cluster(familyp
-> riv)
-  6.         estimate store cog_`yvar'
-  7.         
-.         reg `yvar'         NONCOG_PGS yob yob2 male ev1-ev20, cluster(familyp
-> riv)
-  8.         estimate store noncog_`yvar'
-  9. 
-.         reg `yvar' COG_PGS NONCOG_PGS yob yob2 male ev1-ev20, cluster(familyp
-> riv)
- 10.         estimate store both_`yvar'
- 11. } //end forloop yvar
-variable z_mh017rei not found
-r(111);
-=======
 . 
 . // standardize IQ
 . egen temp = std(iq)
@@ -4423,7 +4286,6 @@ Linear regression                               Number of obs     =      4,262
 ------------------------------------------------------------------------------
 . 
 . 
->>>>>>> Change output format
 . 
 . *--------------Coefficient plot output
 . *-- Cognitive PGS
@@ -4436,26 +4298,15 @@ Linear regression                               Number of obs     =      4,262
 >           (both_agree, aseq(Agreeableness)) ///
 >           (both_attractive, aseq(Attractiveness)) ///
 >    , keep(COG_PGS) ///
-<<<<<<< HEAD
->    msymbol(D) xline(0) byopts(xrescale) levels(95 90) ciopts(recast(. rcap)) 
-> legend(order(1 "95% c.i." 2 "90% c.i." )) graphregion(color(white)) bgcolor(w
-> hite) ///ciopts(lwidth(2 ..) lcolor(*.2 *.4 ; )) xlabel(-.12(.04).12) 
->    aseq swapnames 
-. 
-. graph save   coefplot_cog, replace
-. graph export coefplot_cog.png, replace
-=======
 >    msymbol(D) xline(0) byopts(xrescale) levels(95 90) ciopts(recast(. rcap)) legend
 > (order(1 "95% c.i." 2 "90% c.i." )) graphregion(color(white)) bgcolor(white) ///cio
 > pts(lwidth(2 ..) lcolor(*.2 *.4 ; )) xlabel(-.12(.04).12) 
 >    aseq swapnames 
 . 
 . graph save   coefplot_cog, replace
-(note: file coefplot_cog.gph not found)
 (file coefplot_cog.gph saved)
 . graph export coefplot_cog.png, replace
 (file coefplot_cog.png written in PNG format)
->>>>>>> Change output format
 . 
 . *-- Noncognitive PGS
 . coefplot  (both_eduyears , aseq(Years of edu)) ///
@@ -4467,26 +4318,15 @@ Linear regression                               Number of obs     =      4,262
 >           (both_agree, aseq(Agreeableness)) ///
 >           (both_attractive, aseq(Attractiveness)) ///
 >    , keep(NONCOG_PGS) ///
-<<<<<<< HEAD
->    msymbol(D) xline(0) byopts(xrescale) levels(95 90) ciopts(recast(. rcap)) 
-> legend(order(1 "95% c.i." 2 "90% c.i." )) graphregion(color(white)) bgcolor(w
-> hite) ///ciopts(lwidth(2 ..) lcolor(*.2 *.4 ; )) xlabel(-.12(.04).12) 
->    aseq swapnames 
-. 
-. graph save   coefplot_noncog, replace
-. graph export coefplot_noncog.png, replace
-=======
 >    msymbol(D) xline(0) byopts(xrescale) levels(95 90) ciopts(recast(. rcap)) legend
 > (order(1 "95% c.i." 2 "90% c.i." )) graphregion(color(white)) bgcolor(white) ///cio
 > pts(lwidth(2 ..) lcolor(*.2 *.4 ; )) xlabel(-.12(.04).12) 
 >    aseq swapnames 
 . 
 . graph save   coefplot_noncog, replace
-(note: file coefplot_noncog.gph not found)
 (file coefplot_noncog.gph saved)
 . graph export coefplot_noncog.png, replace
 (file coefplot_noncog.png written in PNG format)
->>>>>>> Change output format
 . 
 . 
 . *-- Both PGS
@@ -4499,41 +4339,24 @@ Linear regression                               Number of obs     =      4,262
 >           (both_agree, aseq(Agreeableness)) ///
 >           (both_attractive, aseq(Attractiveness)) ///
 >    , keep(COG_PGS NONCOG_PGS) ///
-<<<<<<< HEAD
->    msymbol(D) xline(0) byopts(xrescale) levels(95 90) ciopts(recast(. rcap)) 
-> legend(order(1 "95% c.i." 2 "90% c.i." )) graphregion(color(white)) bgcolor(w
-> hite) ///ciopts(lwidth(2 ..) lcolor(*.2 *.4 ; )) xlabel(-.12(.04).12) 
->    aseq swapnames 
-. 
-. graph save   coefplot_both, replace
-. graph export coefplot_both.png, replace
-=======
 >    msymbol(D) xline(0) byopts(xrescale) levels(95 90) ciopts(recast(. rcap)) legend
 > (order(1 "95% c.i." 2 "90% c.i." )) graphregion(color(white)) bgcolor(white) ///cio
 > pts(lwidth(2 ..) lcolor(*.2 *.4 ; )) xlabel(-.12(.04).12) 
 >    aseq swapnames 
 . 
 . graph save   coefplot_both, replace
-(note: file coefplot_both.gph not found)
 (file coefplot_both.gph saved)
 . graph export coefplot_both.png, replace
 (file coefplot_both.png written in PNG format)
->>>>>>> Change output format
 . 
 . 
 . } // end RUNREG
-r(111);
 
-<<<<<<< HEAD
-end of do-file
-r(111);
-=======
 . 
 . log close
       name:  <unnamed>
        log:  /Users/michellerosenberger/Development/GEIGHEI/WLSanalysis/WLS/output/co
 > gNoncog_WLS.log
   log type:  text
- closed on:  28 Mar 2019, 10:12:15
+ closed on:  28 Mar 2019, 10:25:34
 -------------------------------------------------------------------------------------
->>>>>>> Change output format

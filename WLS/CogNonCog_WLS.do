@@ -36,10 +36,7 @@ cd ${DIRCODE}/output
 
 log using cogNoncog_WLS.log, replace
 
-<<<<<<< HEAD
-=======
 *------------ Global variables
->>>>>>> Change output format
 global CREATEDATA = 1
 global RUNREG     = 1
 
@@ -116,12 +113,7 @@ save "${DIRPGS}/cogNoncogPGS.dta", replace
 use "${DIRDATA}/RawData/WLS_Survey_PhenotypicLong-formData-13_06/wls_plg_13_06.dta", clear
 keep idpriv-rlifewv srbmi-rbmc6  *iq*  z_rh00* z_edeqyr edat16 hidg64 z_ha103rea  ///
      z_jh001rec-z_jg361rer ///personality
-<<<<<<< HEAD
-     z_jzg01rer hsr* ///
-      
-=======
      z_jzg01rer hsr* ri001re si001re z_ie008re z_hi101re
->>>>>>> Change output format
 
 destring subject_id , replace
 drop if missing(subject_id)==1
@@ -131,14 +123,9 @@ merge 1:1 subject_id using "${DIRPGS}/cogNoncogPGS.dta"
 drop _merge
 
 *------------ Clean and rename some vars
-<<<<<<< HEAD
-mvdecode sibcount-rlifewv z_spwiiq_f-z_rh009rec z_ha103rea z_jh001rec-z_jg361rer,  mv(-1 = .a \ -2 = .b \ -3 = .r \ -4 = .d \ -5 = .e \ -27 = .f \ -29 = .g)
- 
-=======
 mvdecode sibcount-rlifewv z_spwiiq_f-z_rh009rec z_ha103rea z_jh001rec-z_jg361rer z_jh001rei-z_jh009rei z_ie008re z_jzg01rer z_hi101re,  mv(-1 = .a \ -2 = .b \ -3 = .r \ -4 = .d \ -5 = .e \ -27 = .f \ -29 = .g)
 
 //Gender
->>>>>>> Change output format
 recode z_sexrsp (2 = 0)
 rename z_sexrsp male
 tab male
@@ -157,25 +144,7 @@ replace yob = .w if yob<1900
 rename z_edeqyr eduyears
 
 //Personality
-<<<<<<< HEAD
-rename z_jh001rei extra
-rename z_jh032rei openn
-rename z_jh025rei neuro
-rename z_jh017rei consc
-rename z_jh009rei agree
-
-
-rename z_jn001rei autonomy
-rename z_jn010rei envmastery
-rename z_jn019rei persgrowth
-rename z_jn028rei posrel
-rename z_jn037rei purposelife
-rename z_jn046rei selfaccept
-
-/* phone questionnaire
-=======
 //Note: this variables have more observations than the "phone questionnaire"
->>>>>>> Change output format
 rename z_rh001rec extra
 rename z_rh003rec openn
 rename z_rh005rec neuro
@@ -206,12 +175,6 @@ rename gwiiq_bm iq
 //Attractiveness
 rename z_ha103rea attractive
 
-<<<<<<< HEAD
-
-rename z_jzg01rer hs_classrank
-rename hsrankq    gpa_hsrank
-rename hsrscorq   gpa_hsranknorm
-=======
 //GPA
 rename z_jzg01rer hs_classrank
 rename hsrankq    gpa_hsrank        // High school grades percentile rank
@@ -242,7 +205,6 @@ z_hi503re	R6 Score for the Digit Ordering Task if Participant never refused an i
 z_hinsraschscore	R6 NS Rasch Scoring of all answered questions
 z_hisimplescore	R6 Simple Score for McArdle Task
 */
->>>>>>> Change output format
 
 
 /* Reverse Raw PGSs beacuse of LDpred
@@ -281,10 +243,6 @@ egen temp = std(iq)
 replace iq = temp
 drop temp
 
-<<<<<<< HEAD
-foreach yvar in eduyears iq extra openn neuro consc agree attractive{
-	local yvar z_mh017rei
-=======
 // Set phenotypes
 global PHENO "eduyears iq extra openn neuro consc agree attractive gpa_hsrank cog_sim"
 
@@ -394,7 +352,6 @@ putexcel a1 = matrix(mvFX), names
 
 *--------------Regressions
 foreach yvar in eduyears iq extra openn neuro consc agree attractive {
->>>>>>> Change output format
 	des `yvar'
 	sum `yvar'
 	
