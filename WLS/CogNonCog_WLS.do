@@ -41,14 +41,22 @@ global CREATEDATA = 1
 global RUNREG     = 1
 
 // Set phenotypes
-global PERSONALITY extra openn neuro consc agree autonomy envmastery persgrowth posrel purposelife selfaccept flexgoals tenaciousgoals 
-global COG         iq WAIS8_grad WAIS10_sib z_gi206re z_gi210rec z_gi306re z_gi310rec  z_gi101re z_gi106re  z_gi401re z_gi402re z_gi413re z_gi457re  z_ai101re  z_ai401re z_ai402re z_ai413re z_ai457re  z_gi501re z_gi502re z_gi503re  z_hi206re z_hi210rec z_hi301re z_hi306re z_hi310rec  z_hi101re  z_hi501re z_hi502re z_hi502rea z_hi503re z_hi503rea  z_hi615re z_hinsraschscore z_hisimplescore  z_hi413re z_hi457re 
-global PHENO       eduyears attractive gpa_hsrank hs_classrank tchevl ${COG} ${PERSONALITY} 
+global PERSONALITY   extra openn neuro consc agree autonomy envmastery persgrowth ///
+                     posrel purposelife selfaccept flexgoals tenaciousgoals 
+global COG           iq WAIS8_grad WAIS10_sib z_gi206re z_gi210rec z_gi306re z_gi310rec ///
+                     z_gi101re z_gi106re z_gi401re z_gi402re z_gi413re z_gi457re ///
+                     z_ai101re  z_ai401re z_ai402re z_ai413re z_ai457re  z_gi501re ///
+                     z_gi502re z_gi503re z_hi206re z_hi210rec z_hi301re z_hi306re ///
+                     z_hi310rec  z_hi101re z_hi501re z_hi502re z_hi502rea z_hi503re ///
+                     z_hi503rea  z_hi615re z_hinsraschscore z_hisimplescore z_hi413re ///
+                     z_hi457re 
+global PHENO         eduyears attractive gpa_hsrank hs_classrank tchevl ${COG} ${PERSONALITY} ///
+                     edu occ family
 
 
-if $CREATEDATA==1{
+if $CREATEDATA == 1 {
 ********************************************************************************
-*******************************MERGE THE DATA **********************************
+******************************* MERGE THE DATA *********************************
 ********************************************************************************
 *------------ Import the PGS created in plink
 import delimited "${DIRPGS}/COG_PGS_WLS.profile", clear delimiter(space, collapse)
@@ -75,10 +83,9 @@ drop _merge
 duplicates report fid iid
 destring fid, force gen(subject_id)
 destring iid, force gen(iid_n)
-/*
+
 rename fid subject_id   // fid already numeric
 rename iid iid_n        // iid already numeric
-*/
 
 /*  fid and iid are the same, expect for those that a NA for one of them. I drop them and end up with the sampe of 9012 individuals that is suggested by the WLS
 
@@ -195,7 +202,7 @@ rename hsrscorq   gpa_hsranknorm    // High school grades percentile rank-normal
 //Cognition
 
 rename ri001re    WAIS8_grad          // Total cognition score GRAD (8-items asked)
-rename si001re    WAIS10_sib           // Total cognition score SIB (10-items asked) 
+rename si001re    WAIS10_sib          // Total cognition score SIB (10-items asked) 
 
 
 /* Cognition variables
@@ -233,6 +240,16 @@ foreach var of varlist *PGS{
 
 save "${DIRDATA}/CleanData/WLS_cognoncogPred.dta", replace
 
+*------------ Merge with new outcomes (edu occ family)
+rename subject_id individ
+merge 1:1 individ using "${DIRDATA}/RawData/WLS_Survey_PhenotypicLong-formData-13_06/wls_occupation_data_BenDomingue", nogen 
+
+replace edu = "." if edu == "NA"
+destring edu, replace
+
+rename individ subject_id
+save "${DIRDATA}/CleanData/WLS_cognoncogPred.dta", replace
+
 } // end CREATEDATA
 
 
@@ -253,7 +270,7 @@ egen temp = std(iq)
 replace iq = temp
 drop temp
 
-*--------------PGS Correlations (as in CogNonCog_181121.do)
+*-------------- PGS Correlations (as in CogNonCog_181121.do)
 foreach pgs in NONCOG_PGS COG_PGS {
    reg `pgs' ev1-ev20
    predict r`pgs', r 
